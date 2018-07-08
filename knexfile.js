@@ -1,11 +1,18 @@
 // Update with your config settings.
+const dotenv =  require('dotenv').config();
 
 module.exports = {
 
   development: {
-    client: 'sqlite3',
+    client: /*'sqlite3'*/ 'mysql',
     connection: {
+      /*
       filename: './database/socialclub.db',
+      */
+     host: `${process.env.RDS_HOSTNAME}`, // provide the AWS or Firebase url 
+     database: `${process.env.RDS_DATABASE}`,
+     user:  `${process.env.RDS_USERNAME}`,
+     password: `${process.env.RDS_PASSWORD}`
     },
     migrations: {
       tableName: 'migrations'
@@ -31,10 +38,10 @@ module.exports = {
   production: {
     client: 'mysql',
     connection: {
-      host: 'localhost', // provide the AWS or Firebase url 
-      database: 'userAccount',
-      user:     'admin',
-      password: 'admin'
+      host: `${process.env.RDS_HOSTNAME}`, // provide the AWS or Firebase url 
+      database: `${process.env.RDS_DATABASE}`,
+      user:  `${process.env.RDS_USERNAME}`,
+      password: `${process.env.RDS_PASSWORD}`
     },
     pool: {
       min: 2,

@@ -7,7 +7,8 @@ exports.seed = function(knex, Promise) {
       return knex('userTable').insert([
         {username: 'sam@sam.com', password: 'sdfwaeo'},
         {username: 'admin', password: 'admin'},
-        {username: 'dan@dan.com', password: 'dan'}
+        {username: 'dan@dan.com', password: 'dan'},
+        {username: 'joe@joe.com', password: 'asdfjkl;'}
       ]);
     });
 };
