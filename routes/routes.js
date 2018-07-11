@@ -7,5 +7,6 @@ module.exports = (server) => {
     .post(AccountController.loginUser)
   server.route('/getUsername')
     .get(AccountController.getUsername)
-  
+  server.route('/logoutUser')
+    .get(AccountController.logoutUser)
 }

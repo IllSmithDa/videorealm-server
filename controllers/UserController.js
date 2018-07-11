@@ -27,7 +27,6 @@ const loginUser = (req, res) => {
   db('userTable')
     .where('username', usernameReq)
     .then((post) => {
-      console.log(post[0].password);
       if (post.length === 0) {
         console.log('incorrect username and/or password');
         return;
@@ -39,7 +38,7 @@ const loginUser = (req, res) => {
       req.session.username = usernameReq;
       req.session.password = passwordReq;
       console.log('session', req.session.username)
-      res.status(200).json(post);
+      res.json(req.session.username);
     })
     .catch(function(err) {
       res.status(500).json({ error: err.messsage });
@@ -55,13 +54,20 @@ const loginUser = (req, res) => {
   })
   */
 }
+const logoutUser = (req, res) => {
+  req.session.destroy();
+  //req.session.username = undefined;
+  res.status(200).json({ success: true });
+}
 const getUsername = (req, res) => {
   const { username } = req.session;
   // mySession = req.session;
   console.log('username: ', req.session.username);
+  res.status(200).json(req.session.username);
 }
 module.exports = {
   loginUser,
   createUser,
-  getUsername
+  getUsername,
+  logoutUser
 }
