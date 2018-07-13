@@ -2,7 +2,10 @@ const express = require('express');
 const cors = require('cors');
 const session = require('client-sessions');
 const AWS = require('aws-sdk');
+const mongoose = require('mongoose');
+const fileUpload = require('express-fileupload');
 
+const fs = require('fs');
 const knex = require('knex');
 const mysql = require('mysql');
 const sqlite3 = require('sqlite3');
@@ -20,6 +23,9 @@ const corsOption = {
 };
 server.use(cors(corsOption));
 server.use(bodyParser.json());
+
+// required for uploading images and videos
+server.use(fileUpload());
 server.use(session({ 
   secret: process.env.NODE_SESSIONSECRET,
   cookieName: 'session',
@@ -39,34 +45,13 @@ AWS.config.update({
   secretAccessKey: process.env.AWS_SECRETACCESSKEY
 })
 
-const s3 = new AWS.S3();
-var myBucket = 'my.unique.bucket.userimages';
-var myKey = 'myBucketKey';
-
-s3.createBucket({Bucket: myBucket}, function(err, data) {
-
-if (err) {
-
-   console.log(err);
-
-   } else {
-
-     params = {Bucket: myBucket, Key: myKey, Body: 'Hello!'};
-
-     s3.putObject(params, function(err, data) {
-
-         if (err) {
-
-             console.log(err)
-
-         } else {
-
-             console.log("Successfully uploaded data to myBucket/myKey");
-
-         }
-
-      });
-
-   }
-
+mongoose.Promise = global.Promise;
+mongoose
+.connect(process.env.MONGOLAB_KEY)
+// .connect("mongodb://localhost:27017/loanie")
+.then(function(db) {
+  console.log("Database connected successfully to Mongolab");
+})
+.catch(function(err) {
+  console.log("DB connection failed..", err.message);
 });
