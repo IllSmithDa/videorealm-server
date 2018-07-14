@@ -5,10 +5,24 @@ const STATUS_USER_ERROR = 422;
 const STATUS_SERVER_ERROR = 500;
 
 const createUser = (req, res) => {
-  const {username, password } = req.body;
-  console.log(username);
-  console.log(password);
-  const user = {username, password};
+  const usernameReq = req.body.username;
+  const passwordReq = req.body.password;
+  console.log(usernameReq);
+  console.log(usernameReq);
+  const newUser = new User({ username: usernameReq, password: passwordReq });
+  newUser
+    .save()
+    .then((userData) => {
+      req.session.username = usernameReq;
+      req.session.password = passwordReq;
+      res.status(STATUS_OK).json(userData);
+      // res.writeHead(301, {Location: `http://localhost:3000/profile`});
+      // res.end();
+    })
+    .catch((err) => {
+      res.status(STATUS_USER_ERROR).json(err);
+    })
+  /*
   db
     .insert(user)
     .into('userTable')
@@ -18,6 +32,8 @@ const createUser = (req, res) => {
     .catch(err => {
       res.status(STATUS_SERVER_ERROR).json({ error: err.message });
     });
+  */
+
 }
 
 const loginUser = (req, res) => {

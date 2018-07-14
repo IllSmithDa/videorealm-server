@@ -29,8 +29,8 @@ server.use(fileUpload());
 server.use(session({ 
   secret: process.env.NODE_SESSIONSECRET,
   cookieName: 'session',
-  duration: 30 * 60 * 1000,
-  activeDuration: 5 * 60 * 1000,
+  // duration: 30 * 60 * 1000,
+  // activeDuration: 5 * 60 * 1000,
 }))
 server.listen(port, () => {
   console.log(`server listening on port ${port}`);

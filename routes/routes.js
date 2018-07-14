@@ -12,9 +12,11 @@ module.exports = (server) => {
   server.route('/logoutUser')
     .get(AccountController.logoutUser)
   server.route('/uploadProfilePic')
-    .post(UploadController.uploadProfileImage)
+    .post(UploadController.deleteProfileImage, UploadController.uploadProfileImage)
   server.route('/getBucketList')
     .get(UploadController.listAllBucketObjects)
   server.route('/getUserImage')
     .get(UploadController.getUserImage)
+  server.route('/addDefaultPic')
+    .post(UploadController.addDefaultPic)
 }
