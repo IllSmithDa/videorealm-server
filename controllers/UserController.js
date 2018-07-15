@@ -102,10 +102,20 @@ const getUsername = (req, res) => {
   console.log('username: ', req.session.username);
   res.status(STATUS_OK).json(req.session.username);
 }
+const getUserID = (req, res) => {
+  User.find({username: req.session.username}, (err, userData) => {
+    if (err) {
+      res.status(422).json(err);
+    }
+    console.log(userData);
+    res.status(STATUS_OK).json(userData._id);
+  })
+}
 module.exports = {
   loginUser,
   createUser,
   getUsername,
-  logoutUser,
-  mongoLogin
+  logoutUser, 
+  mongoLogin,
+  getUserID
 }

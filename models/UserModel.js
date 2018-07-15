@@ -13,7 +13,50 @@ const UserSchema = new mongoose.Schema({
   profilePictureID: {
     type: String,
     default: 'DefaultPic.jpg'
-  }
-});
+  },
+  videoList: [{
+    videoName: {
+      type: String,
+      required: true
+    },
+    videoID :{
+      type: String,
+      required: true,
+    },
+    videoURL: {
+      type: String,
+    },
+    userName : {
+      type: String,
+      required: true
+    },
+    comments : [{
+      username:{
+        type: String
+      },
+      comment: {
+        type: String
+      },
+      replies: [{
+        username:{
+          type: String
+        },
+        comment: {
+          type: String
+        }
+      }]
+    }],
+    views: {
+      type: Number,
+      default: 0
+    },
+    videoThumbnailID: {
+      type: String
+    },
+    videoThumbURL: {
+      type: String
+    }
+  }],
+}, { usePushEach: true });
 
 module.exports = mongoose.model('User', UserSchema);

@@ -1,6 +1,5 @@
 const db = require('../db.js');
 var AWS = require('aws-sdk');
-const fs = require('fs');
 const User = require('../models/UserModel')
 
 const STATUS_OK = 200;

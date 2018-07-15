@@ -1,5 +1,6 @@
 const AccountController = require('../controllers/UserController');
 const UploadController = require('../controllers/UploadController');
+const VideoController = require('../controllers/VideoController');
 module.exports = (server) => {
   server.route('/userCreate')
     .post(AccountController.createUser)
@@ -9,6 +10,8 @@ module.exports = (server) => {
     .post(AccountController.mongoLogin)
   server.route('/getUsername')
     .get(AccountController.getUsername)
+  server.route('/getUserID')
+    .get(AccountController.getUserID)
   server.route('/logoutUser')
     .get(AccountController.logoutUser)
   server.route('/uploadProfilePic')
@@ -19,4 +22,8 @@ module.exports = (server) => {
     .get(UploadController.getUserImage)
   server.route('/addDefaultPic')
     .post(UploadController.addDefaultPic)
+  server.route('/uploadVideo')
+    .post(VideoController.uploadVideo)
+  server.route('/getVideoList')
+    .get(VideoController.getVideoList)
 }
