@@ -83,8 +83,123 @@ const getVideoList = (req, res) => {
   })
 }
 
+const getAllVideos = (req, res) => {
+  Video.find({}, (err, videos) => {
+    if (err) res.status(STATUS_SERVER_ERROR).json(err);
+    res.status(STATUS_OK).json(videos);
+  })
+}
+
+const getVideoByID = (req, res) => {
+
+  const reqVideoID = req.body.videoID;
+  Video.findOne({ _id: reqVideoID }, (err, videoData) => {
+
+    if (err) res.state(STATUS_USER_ERROR).json(err)
+    
+    res.status(STATUS_OK).json(videoData);
+  })
+}
+
+const addComment = (req, res) => {
+  const commentUsername = req.session.username;
+  console.log(commentUsername);
+  console.log(req.body);
+  const { comment, videoID, videoUploader } = req.body;
+
+  Video.findOne({ _id: videoID}, (err, videoData) => {
+    if (err) res.state(STATUS_USER_ERROR).json(err);
+    // console.log('videodata', videoData)
+    // console.log(comment);
+    videoData.comments.push({ comment, username: commentUsername });
+
+    videoData
+      .save()
+      .then(() => {
+        User.findOne({username: videoUploader}, (err, userData) => {
+          if (err) res.state(STATUS_USER_ERROR).json(err);
+          let index = 0
+          for(let j = 0; j < userData.videoList.length; j++) {
+            if (videoID === userData.videoList[j]._id.toString()) {
+              console.log('added man');
+              userData.videoList[j].comments.push({ comment, username: commentUsername });
+              index = j;
+            }
+          }
+          userData
+            .save()
+            .then((data) => {
+              // return data back to the client side
+              console.log('data here', index);
+              console.log(userData.videoList[0].comments)
+              res.json(data.videoList[index].comments);
+            })
+            .catch((err) => {
+              res.status(STATUS_USER_ERROR).json({ error: err.message });
+            });
+        })
+      })
+      .catch((err) => {
+        res.status(STATUS_USER_ERROR).json({ error: err.message });
+      });
+  })
+}
+const addReplies = (req, res) => {
+  const { videoID, videoUploader, replayStatement, commentIndex } = req.body;
+  const reqUsername = req.session.username;
+  console.log('id',videoID);
+  Video.findOne({ _id: videoID }, (err, videoData) => {
+    if (err) res.state(STATUS_USER_ERROR).json(err);
+    console.log(videoUploader)
+    videoData.comments[commentIndex].replies.push({  username: reqUsername, comment: replayStatement });
+    videoData
+      .save()
+      .then(() => {
+        console.log('uploader', videoUploader);
+        User.findOne({ username: videoUploader }, (err, userData) => {
+          if (err) res.state(STATUS_USER_ERROR).json(err);
+          let tempIndex = 0;
+          for (i = 0; i < userData.videoList.length; i++) { 
+            // both need to be strings for correct comparison
+            if (userData.videoList[i]._id.toString() === videoID) {
+              userData.videoList[i].comments[commentIndex].replies.push({username: reqUsername, comment: replayStatement})
+              tempIndex = i;
+              break;
+            } 
+          }
+          userData
+            .save()
+            .then((data) => {
+              // send replies back to client side
+              console.log('good data', data.videoList[tempIndex].comments[commentIndex].replies);
+              res.status(200).json(data.videoList[tempIndex].comments[commentIndex].replies)
+            })
+            .catch((err) => {
+              res.status(STATUS_SERVER_ERROR).json({ error: err.message });
+            })
+        });
+      })
+      .catch((err) => {
+        res.status(STATUS_USER_ERROR).json({ error: err.message });
+      })
+    console.log(videoData);
+  })
+}
+
+const deleteVideos = (req, res) => {
+  s3 = new AWS.S3();
+  const myBucket = 'my.unique.bucket.uservideos';
+  const myKey = req.files.videoFile.md5;
+  let params = { Bucket: myBucket, Key: myKey, Body: req.files.videoFile.data};
+  
+}
 
 module.exports = {
   uploadVideo,
   getVideoList,
+  getAllVideos,
+  getVideoByID,
+  addComment,
+  addReplies,
+  deleteVideos
 }

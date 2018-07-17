@@ -12,7 +12,7 @@ const uploadProfileImage = (req, res) => {
   const s3 = new AWS.S3();
   const myBucket = 'my.unique.bucket.userimages';
   const myKey = req.files.profPictureFile.md5;
-  console.log(myKey);
+  console.log('my key:', myKey);
   let params = { Bucket: myBucket, Key: myKey, Body: req.files.profPictureFile.data }
 
   s3.putObject(params, (err, data) => {
@@ -76,10 +76,7 @@ const addDefaultPic = (req, res) => {
       console.log("Successfully uploaded data to myBucket/myKey");
       const paramImage = {Bucket: myBucket, Key: myKey};
       s3.getObject(paramImage, (err, data) => {
-        if (err) console.log(err)
-
-        console.log(data);
-        // res.status(STATUS_OK).json(data);
+        if (err) console.log(err);
         res.writeHead(301, {Location: `http://localhost:3000/adminpage`});
         res.end();
       })
@@ -94,44 +91,21 @@ const listAllBucketObjects = (req, res) => {
   const params = { Bucket: myBucket, MaxKeys: numKeys}
   s3.listObjects(params, (err, data) => {
     console.log(data);
-    res.json(data)
+    res.status(STATUS_USER_ERROR).json(data)
   })
 }
 
 const getUserImage = (req, res) => {
   console.log(req.session.username)
   User.findOne({username: req.session.username}, (err, data) => {
-    
-    console.log(data.profilePictureID);
     const s3 = new AWS.S3();
     const myBucket = 'my.unique.bucket.userimages';
     const myKey = data.profilePictureID;
     const params = { Bucket: myBucket, Key: myKey};
     let url = s3.getSignedUrl('getObject', params);
-    console.log('The URL is', url);
     url = url.split(/\?/)[0];
-    console.log(url)
     res.status(STATUS_OK).json(url)
-    /*
-    s3.getObject(params, (err, data) => {
-      if (err) console.log(err, err.stack); // an error occurred
-      console.log(data);
-      res.status(STATUS_OK).json(data.Body);
-    })
-    */
   })
-
-/*
-  const s3 = new AWS.S3();
-  const myBucket = 'my.unique.bucket.userimages';
-  const myKey = 'myBucketKey';
-  const params = { Bucket: myBucket, Key: myKey};
-  s3.getObject(params, (err, data) => {
-    if (err) console.log(err, err.stack); // an error occurred
-    console.log(data);
-    res.json(data);
-  })
-*/
 }
 module.exports = {
   uploadProfileImage,

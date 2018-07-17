@@ -26,4 +26,12 @@ module.exports = (server) => {
     .post(VideoController.uploadVideo)
   server.route('/getVideoList')
     .get(VideoController.getVideoList)
+  server.route('/getAllVideos')
+    .get(VideoController.getAllVideos)
+  server.route('/getVideo')
+    .post(VideoController.getVideoByID)
+  server.route('/addComment')
+    .post(VideoController.addComment)
+  server.route('/addReplies')
+    .post(VideoController.addReplies)
 }
