@@ -54,7 +54,7 @@ const uploadVideo = (req, res) => {
                   userData
                   .save()
                   .then(() => {
-                    res.writeHead(301, {Location: `http://localhost:3000/account`});
+                    res.writeHead(301, {Location: `https://friendrealm.herokuapp.com/account`});
                     res.end();
                   })
                   .catch((err) => {
@@ -81,7 +81,7 @@ const uploadVideo = (req, res) => {
                     userData
                     .save()
                     .then(() => {
-                      res.writeHead(301, {Location: `http://localhost:3000/account`});
+                      res.writeHead(301, {Location: `https://friendrealm.herokuapp.com/account`});
                       res.end();
                     })
                     .catch((err) => {

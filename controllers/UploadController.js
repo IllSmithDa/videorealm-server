@@ -32,7 +32,7 @@ const uploadProfileImage = (req, res) => {
         userData
           .save()
           .then(() => {
-            res.writeHead(301, {Location: `http://localhost:3000/profile`});
+            res.writeHead(301, {Location: `https://friendrealm.herokuapp.com/profile`});
             res.end();
           })
           .catch(err => {
@@ -78,7 +78,7 @@ const addDefaultPic = (req, res) => {
       const paramImage = {Bucket: myBucket, Key: myKey};
       s3.getObject(paramImage, (err, data) => {
         if (err) res.status(STATUS_SERVER_ERROR).json({err});
-        res.writeHead(301, {Location: `http://localhost:3000/adminpage`});
+        res.writeHead(301, {Location: `https://friendrealm.herokuapp.com/adminpage`});
         res.end();
       })
     }

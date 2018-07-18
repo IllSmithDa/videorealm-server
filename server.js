@@ -18,7 +18,7 @@ const port = 3030;
 
 
 const corsOption = {
-  origin: "https://friendrealm.herokuapp.com/",
+  origin: "https://friendrealm.herokuapp.com",
   credentials: true,
 };
 server.use(cors(corsOption));
