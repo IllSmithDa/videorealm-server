@@ -16,14 +16,13 @@ const routes = require('./routes/routes');
 
 const port = 3030;
 
-/*
 const corsOption = {
   origin: "https://friendrealm.herokuapp.com",
   credentials: true,
 };
 server.use(cors(corsOption));
-*/
 server.use(bodyParser.json());
+
 
 server.use((req, res, next) => {
   console.log(req.headers)
