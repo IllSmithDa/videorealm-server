@@ -18,12 +18,23 @@ const port = 3030;
 
 
 const corsOption = {
-  origin: 'http://localhost:3000',
+  origin: "http://localhost:3000",
   credentials: true,
 };
 server.use(cors(corsOption));
-server.use(bodyParser.json());
 
+server.use(bodyParser.json());
+/*
+server.use((req, res, next) => {
+  console.log(req.headers)
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  next();
+});
+*/
 // required for uploading images and videos
 server.use(fileUpload());
 server.use(session({ 

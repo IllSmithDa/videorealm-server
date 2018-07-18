@@ -1,6 +1,7 @@
 const AWS = require('aws-sdk');
 const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs');
+const uniqueID = require('uniqid');
 const Video = require('../models/VideoModel');
 const User = require('../models/UserModel');
 const STATUS_OK = 200;
@@ -8,18 +9,18 @@ const STATUS_USER_ERROR = 422;
 const STATUS_SERVER_ERROR = 500;
 
 const uploadVideo = (req, res) => {
-  if (!req.files)
-  return res.status(400).send('No files were uploaded.');
-  console.log(req.body.videoName);
+  if (!req.files) return res.status(400).send('No files were uploaded.');
+
   s3 = new AWS.S3();
   const myBucket = 'my.unique.bucket.uservideos';
-  const myKey = req.files.videoFile.md5;
+  const myKey = uniqueID();
+  // console.log('unique key', myKey);
   let params = { Bucket: myBucket, Key: myKey, Body: req.files.videoFile.data};
-  console.log(myKey); 
+  
   s3.putObject(params, (err, data) => {
     params = {Bucket: myBucket, Key: myKey};
     let url = s3.getSignedUrl('getObject', params);
-    console.log('The URL is', url);
+    // console.log('The URL is', url);
     url = url.split(/\?/)[0];
     ffmpeg(url)
       .on('end', () => {
@@ -34,31 +35,64 @@ const uploadVideo = (req, res) => {
           s3.putObject(thumbParams, (err, data) => {
             fs.unlink( `./controllers/thumbnails/${myKey}tn.jpg`, err => {
               if (err) throw err;
-             //console.log('file deleted!')
+             // console.log('file deleted!')
             });
             thumbParams = { Bucket: myBucket, Key: thumbKey }
             let thumbURL = s3.getSignedUrl('getObject', thumbParams)
             thumbURL = thumbURL.split(/\?/)[0];
-            const video = new Video({ userName: req.session.username, videoID: req.files.videoFile.md5, videoURL: url, 
-              videoName: req.body.videoName, videoThumbnailID: thumbKey, videoThumbURL: thumbURL });
-            video
-              .save()
+            
+            /*
+            const video = new Video({ videoList: [{ userName: req.session.username, videoID: myKey, videoURL: url, 
+            videoName: req.body.videoName, videoThumbnailID: thumbKey, videoThumbURL: thumbURL }] });
+            video.save()
               .then(() => {
                 User.findOne({ username: req.session.username }, (err, userData) => {
-                  console.log(video);
-                  userData.videoList.push(video);
+                  const video2 = { userName: req.session.username, videoID: myKey, videoURL: url, 
+                    videoName: req.body.videoName, videoThumbnailID: thumbKey, videoThumbURL: thumbURL };
+                  // console.log(video);
+                  userData.videoList.push(video2);
                   userData
                   .save()
                   .then(() => {
                     res.writeHead(301, {Location: `http://localhost:3000/account`});
                     res.end();
                   })
-  
+                  .catch((err) => {
+                    res.status(STATUS_SERVER_ERROR).json(err);
+                  })
                 })
               })
               .catch((err) => {
                 res.status(STATUS_SERVER_ERROR).json(err);
               })
+            */
+          const video = { userName: req.session.username, videoID: myKey, videoURL: url, 
+             videoName: req.body.videoName, videoThumbnailID: thumbKey, videoThumbURL: thumbURL };
+            
+            Video.find({}, (err, videoData) => {
+              // console.log(videoData.videoList);
+              videoData[0].videoList.push(video);
+              videoData[0]
+                .save()
+                .then(() => {
+                  User.findOne({ username: req.session.username }, (err, userData) => {
+                    // console.log(video);
+                    userData.videoList.push(video);
+                    userData
+                    .save()
+                    .then(() => {
+                      res.writeHead(301, {Location: `http://localhost:3000/account`});
+                      res.end();
+                    })
+                    .catch((err) => {
+                      res.status(STATUS_SERVER_ERROR).json(err);
+                    })
+                  })
+                })
+              })
+              .catch((err) => {
+                res.status(STATUS_SERVER_ERROR).json(err);
+              }) 
           })
         })
       })
@@ -78,50 +112,58 @@ const uploadVideo = (req, res) => {
 const getVideoList = (req, res) => {
   User.find({ username: req.session.username }, (err, userData) => {
     if (err) res.status(STATUS_USER_ERROR).json(err);
-    console.log(userData[0].videoList);
+    // console.log(userData[0].videoList)
     res.status(STATUS_OK).json(userData[0].videoList);
   })
 }
 
 const getAllVideos = (req, res) => {
   Video.find({}, (err, videos) => {
+    // console.log(videos[0].videoList);
     if (err) res.status(STATUS_SERVER_ERROR).json(err);
-    res.status(STATUS_OK).json(videos);
+    res.status(STATUS_OK).json(videos[0].videoList);
   })
 }
 
 const getVideoByID = (req, res) => {
 
   const reqVideoID = req.body.videoID;
-  Video.findOne({ _id: reqVideoID }, (err, videoData) => {
-
+  Video.find({}, (err, videoData) => {
     if (err) res.state(STATUS_USER_ERROR).json(err)
-    
-    res.status(STATUS_OK).json(videoData);
+
+    // console.log(videoData[0].videoList);  
+    for (let i = 0; i < videoData[0].videoList.length; i++) {
+      if (reqVideoID === videoData[0].videoList[i].videoID) {
+        // console.log('match found');
+        res.status(STATUS_OK).json(videoData[0].videoList[i]);
+      }
+    }
   })
 }
 
 const addComment = (req, res) => {
   const commentUsername = req.session.username;
-  console.log(commentUsername);
-  console.log(req.body);
+  // console.log(commentUsername);
+  // console.log(req.body);
   const { comment, videoID, videoUploader } = req.body;
 
-  Video.findOne({ _id: videoID}, (err, videoData) => {
+  Video.find({}, (err, videoData) => {
     if (err) res.state(STATUS_USER_ERROR).json(err);
-    // console.log('videodata', videoData)
-    // console.log(comment);
-    videoData.comments.push({ comment, username: commentUsername });
-
-    videoData
+    
+    for (let i = 0; i < videoData[0].videoList.length; i++) {
+      if (videoID === videoData[0].videoList[i].videoID) {
+        videoData[0].videoList[i].comments.push({ comment, username: commentUsername})
+      }
+    }
+    videoData[0]
       .save()
       .then(() => {
         User.findOne({username: videoUploader}, (err, userData) => {
           if (err) res.state(STATUS_USER_ERROR).json(err);
           let index = 0
           for(let j = 0; j < userData.videoList.length; j++) {
-            if (videoID === userData.videoList[j]._id.toString()) {
-              console.log('added man');
+            if (videoID === userData.videoList[j].videoID) {
+              // console.log('added comment');
               userData.videoList[j].comments.push({ comment, username: commentUsername });
               index = j;
             }
@@ -130,8 +172,8 @@ const addComment = (req, res) => {
             .save()
             .then((data) => {
               // return data back to the client side
-              console.log('data here', index);
-              console.log(userData.videoList[0].comments)
+              // console.log('data here', index);
+              // console.log(userData.videoList[0].comments)
               res.json(data.videoList[index].comments);
             })
             .catch((err) => {
@@ -144,25 +186,29 @@ const addComment = (req, res) => {
       });
   })
 }
+
 const addReplies = (req, res) => {
-  const { videoID, videoUploader, replayStatement, commentIndex } = req.body;
+  const { videoID, videoUploader, replyStatement, commentIndex } = req.body;
   const reqUsername = req.session.username;
-  console.log('id',videoID);
-  Video.findOne({ _id: videoID }, (err, videoData) => {
+  // console.log('id',videoID);
+  Video.find({}, (err, videoData) => {
     if (err) res.state(STATUS_USER_ERROR).json(err);
-    console.log(videoUploader)
-    videoData.comments[commentIndex].replies.push({  username: reqUsername, comment: replayStatement });
-    videoData
+
+    for (let i = 0; i < videoData[0].videoList.length; i++) {
+      if (videoID === videoData[0].videoList[i].videoID) {
+        videoData[0].videoList[i].comments[commentIndex].replies.push({ username: reqUsername, comment: replyStatement })
+      }
+    }
+    videoData[0]
       .save()
       .then(() => {
-        console.log('uploader', videoUploader);
         User.findOne({ username: videoUploader }, (err, userData) => {
           if (err) res.state(STATUS_USER_ERROR).json(err);
           let tempIndex = 0;
           for (i = 0; i < userData.videoList.length; i++) { 
             // both need to be strings for correct comparison
-            if (userData.videoList[i]._id.toString() === videoID) {
-              userData.videoList[i].comments[commentIndex].replies.push({username: reqUsername, comment: replayStatement})
+            if (userData.videoList[i].videoID === videoID) {
+              userData.videoList[i].comments[commentIndex].replies.push({username: reqUsername, comment: replyStatement})
               tempIndex = i;
               break;
             } 
@@ -171,7 +217,7 @@ const addReplies = (req, res) => {
             .save()
             .then((data) => {
               // send replies back to client side
-              console.log('good data', data.videoList[tempIndex].comments[commentIndex].replies);
+              // // console.log('good data', data.videoList[tempIndex].comments[commentIndex].replies);
               res.status(200).json(data.videoList[tempIndex].comments[commentIndex].replies)
             })
             .catch((err) => {
@@ -180,18 +226,61 @@ const addReplies = (req, res) => {
         });
       })
       .catch((err) => {
-        res.status(STATUS_USER_ERROR).json({ error: err.message });
+        res.status(STATUS_SERVER_ERROR).json({ error: err.message });
       })
-    console.log(videoData);
   })
 }
 
 const deleteVideos = (req, res) => {
   s3 = new AWS.S3();
   const myBucket = 'my.unique.bucket.uservideos';
-  const myKey = req.files.videoFile.md5;
-  let params = { Bucket: myBucket, Key: myKey, Body: req.files.videoFile.data};
-  
+  const videoList = { Objects: req.body.videoIDList };
+  let params = { Bucket: myBucket, Delete: videoList, Quiet: false };
+  s3.deleteObjects(params, (err, data) => {
+    if (err) // console.log(err);
+    // console.log(data);
+    User.find({ username: req.session.username }, (err, userData) => {
+      if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message });
+
+      let videoListArr = req.body.videoIDList;
+      for (let i = 0; i < videoListArr.length; i++) {
+        for (let j = 0; j < userData[0].videoList.length; j++) {
+          if (videoListArr[i].Key === userData[0].videoList[j].videoID)
+            userData[0].videoList.splice(j, 1);
+        }
+      }
+      userData[0]
+        .save()
+        .then(() => {
+          Video.find({}, (err, vidData) => {
+            if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message });
+            // console.log(vidData.length)
+            for (let k = 0; k < videoListArr.length; k++) {
+              for (let t = 0; t < vidData[0].videoList.length; t++) {
+                if (videoListArr[k].Key === vidData[0].videoList[t].videoID) {
+                  // console.log('one video', vidData[0].videoList[t].videoID);
+                  // console.log('one video', videoListArr[k].Key);
+                  vidData[0].videoList.splice(t, 1);
+                }
+              }
+            }
+            // console.log('good video data',vidData);
+            vidData[0]
+              .save()
+              .then(() => {
+                res.status(STATUS_OK).json({ sucess: true });
+              })
+              .catch((err) => {
+                res.status(STATUS_SERVER_ERROR).json({ error: err.message });
+              })
+          })
+ 
+        })
+        .catch((err) => {
+          res.status(STATUS_SERVER_ERROR).json({ error: err.message });
+        })
+    })
+  })
 }
 
 module.exports = {

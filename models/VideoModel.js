@@ -2,48 +2,49 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const VideoSchema = new Schema({
-
-  videoName: {
-    type: String,
-    required: true
-  },
-  videoID :{
-    type: String,
-    required: true,
-  },
-  videoURL: {
-    type: String,
-  },
-  userName : {
-    type: String,
-    required: true
-  },
-  comments : [{
-    username:{
-      type: String
+  videoList: [{
+    videoName: {
+      type: String,
+      required: true
     },
-    comment: {
-      type: String
+    videoID :{
+      type: String,
+      required: true,
     },
-    replies: [{
+    videoURL: {
+      type: String,
+    },
+    userName : {
+      type: String,
+      required: true
+    },
+    comments : [{
       username:{
         type: String
       },
       comment: {
         type: String
-      }
-    }]
+      },
+      replies: [{
+        username:{
+          type: String
+        },
+        comment: {
+          type: String
+        }
+      }]
+    }],
+    views: {
+      type: Number,
+      default: 0
+    },
+    videoThumbnailID: {
+      type: String
+    },
+    videoThumbURL: {
+      type: String
+    }
   }],
-  views: {
-    type: Number,
-    default: 0
-  },
-  videoThumbnailID: {
-    type: String
-  },
-  videoThumbURL: {
-    type: String
-  }
 ///  channel_name: String,
 //  viewer_count: Number,
 },{ usePushEach: true });
