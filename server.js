@@ -19,12 +19,13 @@ const port = 3030;
 
 server.use(bodyParser.json());
 
+server.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 const corsOption = {
   origin: requrl.reqURL,
   credentials: true,
 };
 server.use(cors(corsOption));
-server.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+
 /*
 server.use((req, res, next) => {
   console.log(req.headers)
