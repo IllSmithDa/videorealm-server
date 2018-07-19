@@ -5,6 +5,7 @@ const AWS = require('aws-sdk');
 const mongoose = require('mongoose');
 const favicon = require('serve-favicon');
 const fileUpload = require('express-fileupload');
+const path = require('path');
 const fs = require('fs');
 const knex = require('knex');
 const mysql = require('mysql');
