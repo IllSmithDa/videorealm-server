@@ -4,7 +4,6 @@ const session = require('client-sessions');
 const AWS = require('aws-sdk');
 const mongoose = require('mongoose');
 const fileUpload = require('express-fileupload');
-
 const fs = require('fs');
 const knex = require('knex');
 const mysql = require('mysql');
@@ -13,26 +12,30 @@ const bodyParser = require('body-parser');
 const server = express();
 
 const routes = require('./routes/routes');
+const requrl = require('./reqURL');
 
 const port = 3030;
 
 const corsOption = {
-  origin: "https://friendrealm.herokuapp.com",
+  origin: requrl.reqURL,
   credentials: true,
 };
 server.use(cors(corsOption));
 server.use(bodyParser.json());
 
-
+/*
 server.use((req, res, next) => {
   console.log(req.headers)
-  res.setHeader("Access-Control-Allow-Origin", "https://friendrealm.herokuapp.com");
+  res.setHeader("Access-Control-Allow-Origin", 
+    // "https://friendrealm.herokuapp.com"
+    "http://localhost:3000"
+  );
   res.setHeader(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept"
   );
   next();
-});
+});*/
 
 // required for uploading images and videos
 server.use(fileUpload());

@@ -1,7 +1,8 @@
 const db = require('../db.js');
 var AWS = require('aws-sdk');
-const User = require('../models/UserModel')
 const uniqueID = require('uniqid');
+const User = require('../models/UserModel');
+const requrl = require('../reqURL');
 
 const STATUS_OK = 200;
 const STATUS_USER_ERROR = 422;
@@ -32,7 +33,7 @@ const uploadProfileImage = (req, res) => {
         userData
           .save()
           .then(() => {
-            res.writeHead(301, {Location: `https://friendrealm.herokuapp.com/profile`});
+            res.writeHead(301, {Location: `${requrl.reqURL}/profile`});
             res.end();
           })
           .catch(err => {
@@ -78,7 +79,7 @@ const addDefaultPic = (req, res) => {
       const paramImage = {Bucket: myBucket, Key: myKey};
       s3.getObject(paramImage, (err, data) => {
         if (err) res.status(STATUS_SERVER_ERROR).json({err});
-        res.writeHead(301, {Location: `https://friendrealm.herokuapp.com/adminpage`});
+        res.writeHead(301, {Location: `${requrl.reqURL}/adminpage`});
         res.end();
       })
     }
