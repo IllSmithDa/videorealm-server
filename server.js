@@ -24,7 +24,7 @@ const corsOption = {
   credentials: true,
 };
 server.use(cors(corsOption));
-server.use(favicon(__dirname + '/public/favicon.png'));
+server.use('/favicon.ico', express.static('images/favicon.ico'));
 /*
 server.use((req, res, next) => {
   console.log(req.headers)
