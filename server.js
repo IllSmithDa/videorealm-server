@@ -26,16 +26,14 @@ server.use(bodyParser.json());
 /*
 server.use((req, res, next) => {
   console.log(req.headers)
-  res.setHeader("Access-Control-Allow-Origin", 
-    // "https://friendrealm.herokuapp.com"
-    "http://localhost:3000"
-  );
+  res.setHeader("Access-Control-Allow-Origin", requrl.reqURL );
   res.setHeader(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept"
   );
   next();
-});*/
+});
+*/
 
 // required for uploading images and videos
 server.use(fileUpload());
@@ -45,7 +43,7 @@ server.use(session({
   // duration: 30 * 60 * 1000,
   // activeDuration: 5 * 60 * 1000,
 }))
-server.listen(port, () => {
+server.listen(process.env.PORT || port, () => {
   console.log(`server listening on port ${port}`);
 })
 

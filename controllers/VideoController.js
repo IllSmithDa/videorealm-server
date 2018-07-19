@@ -125,6 +125,14 @@ const getAllVideos = (req, res) => {
   })
 }
 
+const getFirstVideoName = (req, res) => {
+  Video.find({}, (err, videoData) => {
+    if (err) res.status(STATUS_SERVER_ERROR).json(err);
+    console.log(videoData[0].videoList[0].videoName)
+    res.status(STATUS_OK).json(videoData[0].videoList[0].videoName);
+  })
+}
+
 const getVideoByID = (req, res) => {
 
   const reqVideoID = req.body.videoID;
@@ -287,6 +295,7 @@ module.exports = {
   uploadVideo,
   getVideoList,
   getAllVideos,
+  getFirstVideoName,
   getVideoByID,
   addComment,
   addReplies,
