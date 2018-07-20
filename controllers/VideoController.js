@@ -96,8 +96,8 @@ const uploadVideo = (req, res) => {
           })
         })
       })
-      .on('error', function(err) {
-        console.error(err);
+      .on('error', (err) => {
+        res.status(STATUS_SERVER_ERROR).json(err);
       })
       .screenshots({
         // Will take screenshots at 20%, 40%, 60% and 80% of the video
