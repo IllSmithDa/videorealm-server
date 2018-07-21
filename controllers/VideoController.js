@@ -26,14 +26,14 @@ const uploadVideo = (req, res) => {
       .on('end', () => {
 
         // read newly created thumbnail file to convert it to buffer
-        fs.readFile(`./controllers/thumbnails/${myKey}tn.jpg`, function (err, data) {
+        fs.readFile(`${myKey}tn.jpg`, function (err, data) {
           if (err) { throw err; }
           const base64data = new Buffer(data, 'binary');
           const thumbKey = `${ myKey }tn.jpg`;
           let thumbParams = { Bucket: myBucket, Key: thumbKey, Body: base64data }
 
           s3.putObject(thumbParams, (err, data) => {
-            fs.unlink( `./controllers/thumbnails/${myKey}tn.jpg`, err => {
+            fs.unlink( `${myKey}tn.jpg`, err => {
               if (err) throw err;
              // console.log('file deleted!')
             });
@@ -70,17 +70,18 @@ const uploadVideo = (req, res) => {
              videoName: req.body.videoName, videoThumbnailID: thumbKey, videoThumbURL: thumbURL };
             
             Video.find({}, (err, videoData) => {
-              // console.log(videoData.videoList);
+              console.log('reached 1');
               videoData[0].videoList.push(video);
               videoData[0]
                 .save()
                 .then(() => {
                   User.findOne({ username: req.session.username }, (err, userData) => {
-                    // console.log(video);
+                    console.log('reached 2')
                     userData.videoList.push(video);
                     userData
                     .save()
                     .then(() => {
+                      console.log('reached 3')
                       res.writeHead(301, {Location: `${requrl.reqURL}/account`});
                       res.end();
                     })
@@ -103,7 +104,6 @@ const uploadVideo = (req, res) => {
         // Will take screenshots at 20%, 40%, 60% and 80% of the video
         count: 1,
         filename:`${myKey}tn.jpg`,
-        folder: './controllers/thumbnails',
         size: '200x150'
       });
   })
