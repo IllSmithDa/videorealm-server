@@ -21,92 +21,63 @@ const uploadVideo = (req, res) => {
     params = {Bucket: myBucket, Key: myKey};
     let signedurl = s3.getSignedUrl('getObject', params);
     // console.log('The URL is', url);
+    
     let url = signedurl.split(/\?/)[0];
-    ffmpeg(url)
-      .on('end', () => {
-
-        // read newly created thumbnail file to convert it to buffer
-        fs.readFile(`./controllers/thumbnails/${myKey}tn.jpg`, function (err, data) {
-          if (err) { throw err; }
-          const base64data = new Buffer(data, 'binary');
-          const thumbKey = `${ myKey }tn.jpg`;
-          let thumbParams = { Bucket: myBucket, Key: thumbKey, Body: base64data }
-
-          s3.putObject(thumbParams, (err, data) => {
-            fs.unlink( `./controllers/thumbnails/${myKey}tn.jpg`, err => {
-              if (err) throw err;
-             // console.log('file deleted!')
-            });
-            thumbParams = { Bucket: myBucket, Key: thumbKey }
-            let thumbURL = s3.getSignedUrl('getObject', thumbParams)
-            thumbURL = thumbURL.split(/\?/)[0];
-            
-            /*
-            const video = new Video({ videoList: [{ userName: req.session.username, videoID: myKey, videoURL: url, 
-            videoName: req.body.videoName, videoThumbnailID: thumbKey, videoThumbURL: thumbURL }] });
-            video.save()
-              .then(() => {
-                User.findOne({ username: req.session.username }, (err, userData) => {
-                  const video2 = { userName: req.session.username, videoID: myKey, videoURL: url, 
-                    videoName: req.body.videoName, videoThumbnailID: thumbKey, videoThumbURL: thumbURL };
-                  // console.log(video);
-                  userData.videoList.push(video2);
-                  userData
-                  .save()
-                  .then(() => {
-                    res.writeHead(301, {Location: `https://friendrealm.herokuapp.com/account`});
-                    res.end();
-                  })
-                  .catch((err) => {
-                    res.status(STATUS_SERVER_ERROR).json(err);
-                  })
-                })
-              })
-              .catch((err) => {
-                res.status(STATUS_SERVER_ERROR).json(err);
-              })
-            */
-          const video = { userName: req.session.username, videoID: myKey, videoURL: url, 
-             videoName: req.body.videoName, videoThumbnailID: thumbKey, videoThumbURL: thumbURL };
-            
-            Video.find({}, (err, videoData) => {
-              console.log('reached phase 1');
-              videoData[0].videoList.push(video);
-              videoData[0]
-                .save()
-                .then(() => {
-                  User.findOne({ username: req.session.username }, (err, userData) => {
-                    console.log('reached phase 2');
-                    userData.videoList.push(video);
-                    userData
-                    .save()
-                    .then(() => {
-                      console.log('reaced phase 3');
-                      res.writeHead(301, {Location: `${requrl.reqURL}/account`});
-                      res.end();
-                    })
-                    .catch((err) => {
-                      res.status(STATUS_SERVER_ERROR).json(err);
-                    })
-                  })
-                })
-              })
-              .catch((err) => {
-                res.status(STATUS_SERVER_ERROR).json(err);
-              }) 
+    const video = { userName: req.session.username, videoID: myKey, videoURL: url, 
+    videoName: req.body.videoName, };
+   
+    Video.find({}, (err, videoData) => {
+      console.log('reached phase 1');
+      videoData[0].videoList.push(video);
+      videoData[0]
+        .save()
+        .then(() => {
+          User.findOne({ username: req.session.username }, (err, userData) => {
+            console.log('reached phase 2');
+            userData.videoList.push(video);
+            userData
+            .save()
+            .then(() => {
+              console.log('reaced phase 3');
+              res.writeHead(301, {Location: `${requrl.reqURL}/account`});
+              res.end();
+            })
+            .catch((err) => {
+              res.status(STATUS_SERVER_ERROR).json(err);
+            })
           })
         })
       })
-      .on('error', (err) => {
+      .catch((err) => {
         res.status(STATUS_SERVER_ERROR).json(err);
-      })
-      .screenshots({
-        // Will take screenshots at 20%, 40%, 60% and 80% of the video
-        count: 1,
-        filename:`${myKey}tn.jpg`,
-        folder: signedurl,
-        size: '200x150'
-      });
+      }) 
+       // read newly created thumbnail file to convert it to buffer   
+  /*
+  const video = new Video({ videoList: [{ userName: req.session.username, videoID: myKey, videoURL: url, 
+   videoName: req.body.videoName, videoThumbnailID: thumbKey, videoThumbURL: thumbURL }] });
+   video.save()
+     .then(() => {
+       User.findOne({ username: req.session.username }, (err, userData) => {
+         const video2 = { userName: req.session.username, videoID: myKey, videoURL: url, 
+           videoName: req.body.videoName, videoThumbnailID: thumbKey, videoThumbURL: thumbURL };
+         // console.log(video);
+         userData.videoList.push(video2);
+         userData
+         .save()
+         .then(() => {
+           res.writeHead(301, {Location: `https://friendrealm.herokuapp.com/account`});
+           res.end();
+         })
+         .catch((err) => {
+           res.status(STATUS_SERVER_ERROR).json(err);
+         })
+       })
+     })
+     .catch((err) => {
+       res.status(STATUS_SERVER_ERROR).json(err);
+     })
+   */
+          
   })
 }
 
