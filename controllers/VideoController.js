@@ -19,9 +19,9 @@ const uploadVideo = (req, res) => {
   
   s3.putObject(params, (err, data) => {
     params = {Bucket: myBucket, Key: myKey};
-    let url = s3.getSignedUrl('getObject', params);
+    let signedurl = s3.getSignedUrl('getObject', params);
     // console.log('The URL is', url);
-    url = url.split(/\?/)[0];
+    let url = signedurl.split(/\?/)[0];
     ffmpeg(url)
       .on('end', () => {
 
@@ -104,7 +104,7 @@ const uploadVideo = (req, res) => {
         // Will take screenshots at 20%, 40%, 60% and 80% of the video
         count: 1,
         filename:`${myKey}tn.jpg`,
-        folder: './controllers/thumbnails',
+        folder: signedurl,
         size: '200x150'
       });
   })
