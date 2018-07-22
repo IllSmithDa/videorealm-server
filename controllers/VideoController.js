@@ -215,7 +215,7 @@ const deleteVideos = (req, res) => {
   s3 = new AWS.S3();
   const myBucket = 'my.unique.bucket.uservideos';
   const videoList = { Objects: req.body.videoIDList };
-  let params = { Bucket: myBucket, Delete: videoList, Quiet: false };
+  let params = { Bucket: myBucket, Delete: videoList };
   s3.deleteObjects(params, (err, data) => {
     if (err) console.log(err);
     // console.log(data);
