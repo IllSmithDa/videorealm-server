@@ -217,7 +217,7 @@ const deleteVideos = (req, res) => {
   const videoList = { Objects: req.body.videoIDList };
   let params = { Bucket: myBucket, Delete: videoList, Quiet: false };
   s3.deleteObjects(params, (err, data) => {
-    if (err) // console.log(err);
+    if (err) console.log(err);
     // console.log(data);
     User.find({ username: req.session.username }, (err, userData) => {
       if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message });
