@@ -2,6 +2,7 @@ const AWS = require('aws-sdk');
 const uniqueID = require('uniqid');
 const Video = require('../models/VideoModel');
 const User = require('../models/UserModel');
+const requrl = require('./reqURL');
 const STATUS_OK = 200;
 const STATUS_USER_ERROR = 422;
 const STATUS_SERVER_ERROR = 500;
@@ -41,14 +42,12 @@ const uploadVideo = (req, res) => {
               res.end();
             })
             .catch((err) => {
-              console.log(err);
-              console.log(err.message);
-              res.status(STATUS_SERVER_ERROR).json(err);
+              res.status(STATUS_SERVER_ERROR).json({ error: err.message});
             })
           })
         })
         .catch((err) => {
-          res.status(STATUS_SERVER_ERROR).json(err);
+          res.status(STATUS_SERVER_ERROR).json({ error: err.message});
         }) 
       })
 
@@ -70,12 +69,12 @@ const uploadVideo = (req, res) => {
            res.end();
          })
          .catch((err) => {
-           res.status(STATUS_SERVER_ERROR).json(err);
+           res.status(STATUS_SERVER_ERROR).json({ error: err.message});
          })
        })
      })
      .catch((err) => {
-       res.status(STATUS_SERVER_ERROR).json(err);
+       res.status(STATUS_SERVER_ERROR).json({ error: err.message});
      })
    */
           
@@ -84,7 +83,7 @@ const uploadVideo = (req, res) => {
 
 const getVideoList = (req, res) => {
   User.find({ username: req.session.username }, (err, userData) => {
-    if (err) res.status(STATUS_USER_ERROR).json(err);
+    if (err) res.status(STATUS_USER_ERROR).json({ error: err.message});
     // console.log(userData[0].videoList)
     res.status(STATUS_OK).json(userData[0].videoList);
   })
@@ -93,14 +92,14 @@ const getVideoList = (req, res) => {
 const getAllVideos = (req, res) => {
   Video.find({}, (err, videos) => {
     // console.log(videos[0].videoList);
-    if (err) res.status(STATUS_SERVER_ERROR).json(err);
+    if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message});
     res.status(STATUS_OK).json(videos[0].videoList);
   })
 }
 
 const getFirstVideoName = (req, res) => {
   Video.find({}, (err, videoData) => {
-    if (err) res.status(STATUS_SERVER_ERROR).json(err);
+    if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message});
     console.log(videoData[0].videoList[0].videoName)
     res.status(STATUS_OK).json(videoData[0].videoList[0].videoName);
   })
@@ -129,7 +128,7 @@ const addComment = (req, res) => {
   const { comment, videoID, videoUploader } = req.body;
 
   Video.find({}, (err, videoData) => {
-    if (err) res.state(STATUS_USER_ERROR).json(err);
+    if (err) res.state(STATUS_USER_ERROR).json({ error: err.message});
     
     for (let i = 0; i < videoData[0].videoList.length; i++) {
       if (videoID === videoData[0].videoList[i].videoID) {
@@ -140,7 +139,7 @@ const addComment = (req, res) => {
       .save()
       .then(() => {
         User.findOne({username: videoUploader}, (err, userData) => {
-          if (err) res.state(STATUS_USER_ERROR).json(err);
+          if (err) res.state(STATUS_USER_ERROR).json({ error: err.message});
           let index = 0
           for(let j = 0; j < userData.videoList.length; j++) {
             if (videoID === userData.videoList[j].videoID) {
@@ -173,7 +172,7 @@ const addReplies = (req, res) => {
   const reqUsername = req.session.username;
   // console.log('id',videoID);
   Video.find({}, (err, videoData) => {
-    if (err) res.state(STATUS_USER_ERROR).json(err);
+    if (err) res.state(STATUS_USER_ERROR).json({ error: err.message});
 
     for (let i = 0; i < videoData[0].videoList.length; i++) {
       if (videoID === videoData[0].videoList[i].videoID) {
@@ -184,7 +183,7 @@ const addReplies = (req, res) => {
       .save()
       .then(() => {
         User.findOne({ username: videoUploader }, (err, userData) => {
-          if (err) res.state(STATUS_USER_ERROR).json(err);
+          if (err) res.state(STATUS_USER_ERROR).json({ error: err.message});
           let tempIndex = 0;
           for (i = 0; i < userData.videoList.length; i++) { 
             // both need to be strings for correct comparison
