@@ -41,6 +41,7 @@ const uploadVideo = (req, res) => {
               res.end();
             })
             .catch((err) => {
+              console.log('error: phase 3');
               res.status(STATUS_SERVER_ERROR).json(err);
             })
           })

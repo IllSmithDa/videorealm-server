@@ -21,3 +21,4 @@ to the database.
   a. Create a standard routes and controller folders with routes and controllers. Export db file to the controllers and use db to 
   store the income requests (posts) into the tables and databases that we have created. 
   b. uses functions like insert(), into() as well as async functions like then(), catch() etc.
+11. The browser will make request for 
