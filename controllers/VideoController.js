@@ -41,15 +41,16 @@ const uploadVideo = (req, res) => {
               res.end();
             })
             .catch((err) => {
-              console.log('error: phase 3');
+              console.log(err);
               res.status(STATUS_SERVER_ERROR).json(err);
             })
           })
         })
+        .catch((err) => {
+          res.status(STATUS_SERVER_ERROR).json(err);
+        }) 
       })
-      .catch((err) => {
-        res.status(STATUS_SERVER_ERROR).json(err);
-      }) 
+
        // read newly created thumbnail file to convert it to buffer   
   /*
   const video = new Video({ videoList: [{ userName: req.session.username, videoID: myKey, videoURL: url, 
