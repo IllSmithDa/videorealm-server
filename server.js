@@ -4,7 +4,8 @@ const session = require('client-sessions');
 const AWS = require('aws-sdk');
 const mongoose = require('mongoose');
 const fileUpload = require('express-fileupload');
-
+const favicon = require('serve-favicon');
+const path = require('path');
 const fs = require('fs');
 const knex = require('knex');
 const mysql = require('mysql');
@@ -25,7 +26,7 @@ const corsOption = {
   credentials: true,
 };
 server.use(cors(corsOption));
-
+server.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
 /*
 server.use((req, res, next) => {
   console.log(req.headers)
