@@ -1,6 +1,4 @@
 const AWS = require('aws-sdk');
-const ffmpeg = require('fluent-ffmpeg');
-const fs = require('fs');
 const uniqueID = require('uniqid');
 const Video = require('../models/VideoModel');
 const User = require('../models/UserModel');
@@ -38,8 +36,8 @@ const uploadVideo = (req, res) => {
             userData
             .save()
             .then(() => {
-              console.log('reaced phase 3');
-              res.writeHead(301, {Location: `${requrl.reqURL}/account`});
+              console.log(`${requrl.reqURL}/account`);
+              res.writeHead(301, {'Location' : `${requrl.reqURL}/account`});
               res.end();
             })
             .catch((err) => {

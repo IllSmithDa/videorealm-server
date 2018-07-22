@@ -3,9 +3,8 @@ const cors = require('cors');
 const session = require('client-sessions');
 const AWS = require('aws-sdk');
 const mongoose = require('mongoose');
-const favicon = require('serve-favicon');
 const fileUpload = require('express-fileupload');
-const path = require('path');
+
 const fs = require('fs');
 const knex = require('knex');
 const mysql = require('mysql');
@@ -20,7 +19,7 @@ const port = 3030;
 
 server.use(bodyParser.json());
 
-// server.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+
 const corsOption = {
   origin: requrl.reqURL,
   credentials: true,
