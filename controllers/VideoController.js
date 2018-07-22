@@ -37,8 +37,9 @@ const uploadVideo = (req, res) => {
             .save()
             .then(() => {
               console.log(`${requrl.reqURL}/account`);
-              res.writeHead(301, {'Location' : `${requrl.reqURL}/account`});
-              res.end();
+              res.status(STATUS_OK).json(userData);
+            //  res.writeHead(301, {'Location' : `${requrl.reqURL}/account`});
+            //  res.end();
             })
             .catch((err) => {
               res.status(STATUS_SERVER_ERROR).json(err);
