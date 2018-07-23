@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const db = require('../db.js');
 const User = require('../models/UserModel');
 const STATUS_OK = 200;
@@ -57,9 +58,8 @@ const mongoLogin = (req, res) => {
     if (err || user === null) {
       res.status(STATUS_USER_ERROR).json(err);
     }
-    if (err || password !== user.password) {
-      res.status(STATUS_USER_ERROR).json(err);
-    }
+    bcrypt
+      .compare(passwordReq, user.password, (err, ))
     req.session.username = usernameReq;
     req.session.password = passwordReq;
     console.log('session', req.session.username)
@@ -88,11 +88,26 @@ const getUserID = (req, res) => {
     res.status(STATUS_OK).json(userData._id);
   })
 }
+const passwordHash = (req, res) => {
+  const saltRounds = 11;
+  const { password } = req.body;
+  bcrypt.genSalt(saltRounds, (err, salt) => {
+    if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message });
+
+      bcrypt.hash(password, salt, (err, hashedData) => {
+      if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message });
+      req.body.password = hashedData;
+      next();
+     })
+  })
+}
+
 module.exports = {
   loginUser,
   createUser,
   getUsername,
   logoutUser, 
   mongoLogin,
-  getUserID
+  getUserID,
+  passwordHash
 }

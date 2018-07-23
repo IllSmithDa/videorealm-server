@@ -3,7 +3,7 @@ const UploadController = require('../controllers/UploadController');
 const VideoController = require('../controllers/VideoController');
 module.exports = (server) => {
   server.route('/userCreate')
-    .post(AccountController.createUser)
+    .post(AccountController.passwordHash, AccountController.createUser)
   server.route('/loginUser')
     .post(AccountController.loginUser)
   server.route('/mongoLogin')
