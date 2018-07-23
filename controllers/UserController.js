@@ -51,19 +51,18 @@ const loginUser = (req, res) => {
 const mongoLogin = (req, res) => {
   const usernameReq = req.body.username;
   const passwordReq = req.body.password;
-  console.log(usernameReq);
-  console.log(passwordReq);
+
   const {username, password} = req.body;
   User.findOne({username}, (err, user) => {
     if (err || user === null) {
       res.status(STATUS_USER_ERROR).json(err);
     }
     bcrypt
-      .compare(passwordReq, user.password, (err, ))
-    req.session.username = usernameReq;
-    req.session.password = passwordReq;
-    console.log('session', req.session.username)
-    res.status(STATUS_OK).json(req.session.username);
+      .compare(passwordReq, user.password, (err) => {
+        req.session.username = usernameReq;
+        req.session.password = passwordReq;
+        res.status(STATUS_OK).json(req.session.username);
+      })
   })
 }
 
