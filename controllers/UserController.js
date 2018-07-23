@@ -87,7 +87,7 @@ const getUserID = (req, res) => {
     res.status(STATUS_OK).json(userData._id);
   })
 }
-const passwordHash = (req, res) => {
+const passwordHash = (req, res, next) => {
   const saltRounds = 11;
   const { password } = req.body;
   bcrypt.genSalt(saltRounds, (err, salt) => {
