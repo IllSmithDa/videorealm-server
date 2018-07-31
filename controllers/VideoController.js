@@ -9,78 +9,96 @@ const STATUS_SERVER_ERROR = 500;
 
 const uploadVideo = (req, res) => {
   if (!req.files) return res.status(400).send('No files were uploaded.');
-
-  s3 = new AWS.S3();
-  const myBucket = 'my.unique.bucket.uservideos';
-  const myKey = uniqueID();
-  // console.log('unique key', myKey);
-  let params = { Bucket: myBucket, Key: myKey, Body: req.files.videoFile.data};
-  
-  s3.putObject(params, (err, data) => {
-    params = {Bucket: myBucket, Key: myKey};
-    let signedurl = s3.getSignedUrl('getObject', params);
-    // console.log('The URL is', url);
+  if (!(/.mp4/).test(req.files.videoFile.name) && !(/.mov/).test(req.files.videoFile.name) &&
+  !(/.wmv/).test(req.files.videoFile.name) &&  !(/.avi/).test(req.files.videoFile.name) &&
+  !(/.flv/).test(req.files.videoFile.name)) {
+    console.log('over here')
+    res.writeHead(301, {Location: `${requrl.reqURL}/account`});
+    res.end();
+  } else {
+    s3 = new AWS.S3();
+    const myBucket = 'my.unique.bucket.uservideos';
+    const myKey = uniqueID();
+    // console.log('unique key', myKey);
+    let params = { Bucket: myBucket, Key: myKey, Body: req.files.videoFile.data};
     
-    let url = signedurl.split(/\?/)[0];
-    const video = { userName: req.session.username, videoID: myKey, videoURL: url, 
-    videoName: req.body.videoName, };
-   
-    Video.find({}, (err, videoData) => {
-      console.log('reached phase 1');
-      videoData[0].videoList.push(video);
-      videoData[0]
-        .save()
-        .then(() => {
-          User.findOne({ username: req.session.username }, (err, userData) => {
-            console.log('reached phase 2');
-            userData.videoList.push(video);
-            userData
-            .save()
-            .then(() => {
-              console.log('reaced phase 3');
-              res.writeHead(301, {Location: `${requrl.reqURL}/account`});
-              res.end();
-            })
-            .catch((err) => {
-              res.status(STATUS_SERVER_ERROR).json({ error: err.message});
+    s3.putObject(params, (err, data) => {
+      params = {Bucket: myBucket, Key: myKey};
+      let signedurl = s3.getSignedUrl('getObject', params);
+      // console.log('The URL is', url);
+      
+      let url = signedurl.split(/\?/)[0];
+      const video = { userName: req.session.username, videoID: myKey, videoURL: url, 
+      videoName: req.body.videoName, };
+     
+      Video.find({}, (err, videoData) => {
+        console.log('reached phase 1');
+        videoData[0].videoList.push(video);
+        videoData[0]
+          .save()
+          .then(() => {
+            User.findOne({ username: req.session.username }, (err, userData) => {
+              console.log('reached phase 2');
+              userData.videoList.push(video);
+              userData
+              .save()
+              .then(() => {
+                console.log('reaced phase 3');
+                res.writeHead(301, {Location: `${requrl.reqURL}/account`});
+                res.end();
+              })
+              .catch((err) => {
+                res.status(STATUS_SERVER_ERROR).json({ error: err.message});
+              })
             })
           })
+          .catch((err) => {
+            res.status(STATUS_SERVER_ERROR).json({ error: err.message});
+          }) 
         })
-        .catch((err) => {
-          res.status(STATUS_SERVER_ERROR).json({ error: err.message});
-        }) 
-      })
-
-       // read newly created thumbnail file to convert it to buffer   
-  /*
-  const video = new Video({ videoList: [{ userName: req.session.username, videoID: myKey, videoURL: url, 
-   videoName: req.body.videoName, videoThumbnailID: thumbKey, videoThumbURL: thumbURL }] });
-   video.save()
-     .then(() => {
-       User.findOne({ username: req.session.username }, (err, userData) => {
-         const video2 = { userName: req.session.username, videoID: myKey, videoURL: url, 
-           videoName: req.body.videoName, videoThumbnailID: thumbKey, videoThumbURL: thumbURL };
-         // console.log(video);
-         userData.videoList.push(video2);
-         userData
-         .save()
-         .then(() => {
-           res.writeHead(301, {Location: `https://friendrealm.herokuapp.com/account`});
-           res.end();
-         })
-         .catch((err) => {
-           res.status(STATUS_SERVER_ERROR).json({ error: err.message});
+  
+         // read newly created thumbnail file to convert it to buffer   
+    /*
+    const video = new Video({ videoList: [{ userName: req.session.username, videoID: myKey, videoURL: url, 
+     videoName: req.body.videoName, videoThumbnailID: thumbKey, videoThumbURL: thumbURL }] });
+     video.save()
+       .then(() => {
+         User.findOne({ username: req.session.username }, (err, userData) => {
+           const video2 = { userName: req.session.username, videoID: myKey, videoURL: url, 
+             videoName: req.body.videoName, videoThumbnailID: thumbKey, videoThumbURL: thumbURL };
+           // console.log(video);
+           userData.videoList.push(video2);
+           userData
+           .save()
+           .then(() => {
+             res.writeHead(301, {Location: `https://friendrealm.herokuapp.com/account`});
+             res.end();
+           })
+           .catch((err) => {
+             res.status(STATUS_SERVER_ERROR).json({ error: err.message});
+           })
          })
        })
-     })
-     .catch((err) => {
-       res.status(STATUS_SERVER_ERROR).json({ error: err.message});
-     })
-   */
-          
+       .catch((err) => {
+         res.status(STATUS_SERVER_ERROR).json({ error: err.message});
+       })
+     */
+            
+    })
+  }
+}
+const countNumVideos = (req, res, next) => {
+  User.find({username: req.session.username}, (err, userData) => {
+    console.log('match found')
+    if (err) res.status(STATUS_USER_ERROR).json({ error: err.message});
+    if (userData[0].videoList.length >= 5) {
+      res.writeHead(301, {Location: `${requrl.reqURL}/account`});
+      res.end();
+    } else {
+      next();
+    }
   })
 }
-
 const getVideoList = (req, res) => {
   User.find({ username: req.session.username }, (err, userData) => {
     if (err) res.status(STATUS_USER_ERROR).json({ error: err.message});
@@ -271,5 +289,6 @@ module.exports = {
   getVideoByID,
   addComment,
   addReplies,
-  deleteVideos
+  deleteVideos,
+  countNumVideos
 }

@@ -29,7 +29,7 @@ module.exports = (server) => {
   server.route('/addDefaultPic')
     .post(UploadController.addDefaultPic)
   server.route('/uploadVideo')
-    .post(VideoController.uploadVideo)
+    .post(VideoController.countNumVideos, VideoController.uploadVideo)
   server.route('/getVideoList')
     .get(VideoController.getVideoList)
   server.route('/getAllVideos')
@@ -44,4 +44,6 @@ module.exports = (server) => {
     .post(VideoController.addComment)
   server.route('/addReplies')
     .post(VideoController.addReplies)
+  server.route('/countNumVideos')
+    .get(VideoController.countNumVideos)
 }

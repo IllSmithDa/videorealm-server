@@ -10,13 +10,19 @@ const STATUS_SERVER_ERROR = 500;
 
 const uploadProfileImage = (req, res) => {
   if (!req.files) return res.status(STATUS_USER_ERROR).send('No files were uploaded.');
+  console.log(req.files)
+  if (!(/.png/).test(req.files.profPictureFile.name) && !(/.jpg/).test(req.files.profPictureFile.name) &&
+  !(/.bmp/).test(req.files.profPictureFile.name)) {
+    res.writeHead(301, {Location: `${requrl.reqURL}/profile`});
+    res.end();
+  }
 
   const s3 = new AWS.S3();
   const myBucket = 'my.unique.bucket.userimages';
   const myKey = uniqueID();
   // console.log('my key:', myKey);
   let params = { Bucket: myBucket, Key: myKey, Body: req.files.profPictureFile.data }
-
+  
   s3.putObject(params, (err, data) => {
     if (err) {
       res.status(STATUS_SERVER_ERROR).json({err});
