@@ -57,7 +57,8 @@ routes(server);
 // https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESSKEYID,
-  secretAccessKey: process.env.AWS_SECRETACCESSKEY
+  secretAccessKey: process.env.AWS_SECRETACCESSKEY,
+  region: "us-west-1",
 })
 
 mongoose.Promise = global.Promise;

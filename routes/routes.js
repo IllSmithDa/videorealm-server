@@ -4,6 +4,12 @@ const VideoController = require('../controllers/VideoController');
 module.exports = (server) => {
   server.route('/userCreate')
     .post(AccountController.passwordHash, AccountController.createUser)
+  server.route('/createAwsUser')
+    .post(AccountController.passwordHash, AccountController.createAwsUser)
+  server.route('/checkUsername')
+    .post(AccountController.checkUsername)
+  server.route('/checkEmail')
+    .post(AccountController.checkEmail)
   server.route('/loginUser')
     .post(AccountController.loginUser)
   server.route('/mongoLogin')
