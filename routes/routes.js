@@ -34,6 +34,8 @@ module.exports = (server) => {
     .get(VideoController.getVideoList)
   server.route('/getAllVideos')
     .get(VideoController.getAllVideos)
+  server.route('/searchVideos')
+    .post(VideoController.videoSearch)
   server.route('/getFirstVideoName')
     .get(VideoController.getFirstVideoName)
   server.route('/getVideo')

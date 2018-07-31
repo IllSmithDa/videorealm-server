@@ -138,6 +138,24 @@ const getVideoByID = (req, res) => {
     }
   })
 }
+const videoSearch = (req, res) => {
+  let {searchTerm} = req.body;
+  searchTerm = searchTerm.replace(/%20/g, " ");
+  console.log(searchTerm)
+  const patt = new RegExp(searchTerm.toUpperCase());
+  const searchResults = [];
+
+  Video.find({}, (err, videos) => {
+    if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message });
+
+    for (let i = 0; i < videos[0].videoList.length; i++) {
+      if (patt.test(videos[0].videoList[i].videoName.toUpperCase())) {
+        searchResults.push(videos[0].videoList[i])
+      }
+    }
+    res.status(STATUS_OK).json(searchResults);
+  })
+}
 
 const addComment = (req, res) => {
   const commentUsername = req.session.username;
@@ -290,5 +308,6 @@ module.exports = {
   addComment,
   addReplies,
   deleteVideos,
-  countNumVideos
+  countNumVideos,
+  videoSearch
 }
