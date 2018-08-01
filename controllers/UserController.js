@@ -178,8 +178,12 @@ const logoutUser = (req, res) => {
 
 const getUsername = (req, res) => {
   // mySession = req.session;
-  console.log('username: ', req.session.username);
-  res.status(STATUS_OK).json(req.session.username);
+  if (req.session.username === null || req.session.username === undefined || req.session.username === '') {
+    res.json({error: 'user not logged on'});
+  } else {
+    console.log('username: ', req.session.username);
+    res.status(STATUS_OK).json(req.session.username);
+  }
 }
 
 const getUserID = (req, res) => {
