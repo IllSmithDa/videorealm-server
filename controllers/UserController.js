@@ -28,10 +28,8 @@ checkUsername = (req, res) => {
   User.find({ username: usernameReq}, (err, userData) => {
     if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message })
     if (userData[0] === null || userData[0] === undefined || userData[0] === '') {
-      console.log('no username exists')
       res.status(STATUS_OK).json({ sucess: true})
     } else {
-      console.log(userData);
       res.json({ error: 'username exists'})
     }
   })
@@ -149,24 +147,25 @@ const loginUser = (req, res) => {
 const mongoLogin = (req, res) => {
   const usernameReq = req.body.username;
   const passwordReq = req.body.password;
-
+  console.log(passwordReq);
   User.findOne({username: usernameReq}, (err, user) => {
     if (err || user === null) {
-      res.status(STATUS_USER_ERROR).json(err);
-    }
-
-    bcrypt
+      res.json({error: "incorrect username/password"});
+    } else {
+      bcrypt
       .compare(passwordReq, user.password, (err, match) => {
         if (err) {
           res.status(STATUS_SERVER_ERROR).json({error: err.message});
         } 
         if (!match) {
-          res.json({error: "incorrect password"});
+          res.json({error: "incorrect username/password"});
         } else {
           req.session.username = usernameReq;
           res.status(STATUS_OK).json(req.session.username);
         }
       })
+
+    }
   })
 }
 
