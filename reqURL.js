@@ -5,7 +5,7 @@
 // const reqURL='http://localhost:4200';
 
 // heroku environment
-const reqURL='https://friendrealm.herokuapp.com';
+const reqURL='https://videorealm.herokuapp.com';
 
 module.exports = {
   reqURL
