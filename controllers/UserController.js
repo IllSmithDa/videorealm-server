@@ -10,17 +10,22 @@ const createUser = (req, res) => {
   const usernameReq = req.body.username;
   const passwordReq = req.body.password;
   const emailReq  = req.body.email;
+  const secretReq = req.body.secretKey;
 
-  const newUser = new User({ username: usernameReq, password: passwordReq, email: emailReq });
-  newUser
-    .save()
-    .then((userData) => {
-      req.session.username = usernameReq;
-      res.status(STATUS_OK).json(userData);
-    })
-    .catch((err) => {
-      res.status(STATUS_USER_ERROR).json(err);
-    })
+  if (secretReq !== process.env.SECRET_KEY) {
+    res.json({ error: 'Secret key is not correct' });
+  } else {
+    const newUser = new User({ username: usernameReq, password: passwordReq, email: emailReq });
+    newUser
+      .save()
+      .then((userData) => {
+        req.session.username = usernameReq;
+        res.status(STATUS_OK).json(userData);
+      })
+      .catch((err) => {
+        res.status(STATUS_USER_ERROR).json(err);
+      })
+  }
 }
 
 checkUsername = (req, res) => {
