@@ -10,11 +10,6 @@ const createUser = (req, res) => {
   const usernameReq = req.body.username;
   const passwordReq = req.body.password;
   const emailReq  = req.body.email;
-  const secretReq = req.body.secretKey;
-
-  if (secretReq !== process.env.SECRET_KEY) {
-    res.json({ error: 'Secret key is not correct' });
-  } else {
     const newUser = new User({ username: usernameReq, password: passwordReq, email: emailReq });
     newUser
       .save()
@@ -25,6 +20,14 @@ const createUser = (req, res) => {
       .catch((err) => {
         res.status(STATUS_USER_ERROR).json(err);
       })
+}
+
+const checkSecretKey = (req, res, next) => {
+  const secretReq = req.body.secretKey;
+  if (secretReq !== process.env.SECRET_KEY) {
+    res.json({ error: 'Secret key is not correct' });
+  } else {
+    res.status(200).json({ sucess: true });
   }
 }
 
@@ -218,6 +221,7 @@ module.exports = {
   loginUser,
   createUser,
   checkUsername,
+  checkSecretKey,
   checkEmail,
   createAwsUser,
   getUsername,

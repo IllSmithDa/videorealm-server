@@ -48,4 +48,6 @@ module.exports = (server) => {
     .post(VideoController.addReplies)
   server.route('/countNumVideos')
     .get(VideoController.countNumVideos)
+  server.route('/checkSecretKey')
+    .post(AccountController.checkSecretKey)
 }
