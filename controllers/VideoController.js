@@ -2,7 +2,7 @@ const AWS = require('aws-sdk');
 const uniqueID = require('uniqid');
 const Video = require('../models/VideoModel');
 const User = require('../models/UserModel');
-const requrl = require('../reqURL')
+const requrl = require('../reqURL');
 const STATUS_OK = 200;
 const STATUS_USER_ERROR = 422;
 const STATUS_SERVER_ERROR = 500;
@@ -38,6 +38,7 @@ const uploadVideo = (req, res) => {
           .save()
           .then(() => {
             User.findOne({ username: req.session.username }, (err, userData) => {
+              if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack});
               console.log('reached phase 2');
               userData.videoList.push(video);
               userData
@@ -100,13 +101,24 @@ const countNumVideos = (req, res, next) => {
   })
 }
 const getVideoList = (req, res) => {
-  User.find({ username: req.session.username }, (err, userData) => {
+  reqUsername = req.session.username;
+  if (reqUsername=== undefined || reqUsername === null || reqUsername === ''){
+    res.json({error: 'user is not logged in'});
+  } else {
+    User.find({ username: reqUsername }, (err, userData) => {
+      if (err) res.status(STATUS_USER_ERROR).json({ error: err.message});
+      // console.log(userData[0].videoList)
+      res.status(STATUS_OK).json(userData[0].videoList);
+    })
+  }
+}
+const postVideoList = (req, res) => {
+  reqUsername = req.body.username;
+  User.find({ username: reqUsername }, (err, userData) => {
     if (err) res.status(STATUS_USER_ERROR).json({ error: err.message});
-    // console.log(userData[0].videoList)
     res.status(STATUS_OK).json(userData[0].videoList);
   })
 }
-
 const getAllVideos = (req, res) => {
   Video.find({}, (err, videos) => {
     // console.log(videos[0].videoList);
@@ -123,6 +135,39 @@ const getFirstVideoName = (req, res) => {
   })
 }
 
+const deleteUserVideos = (req, res, next) => {
+  const videoIDList = [];
+  s3 = new AWS.S3();
+  const myBucket = 'my.unique.bucket.uservideos';
+
+  Video.find({}, (err, videoData) => {
+    if (err) res.state(STATUS_USER_ERROR).json(err);
+
+    console.log(videoData);
+    for (let i = 0; i < videoData[0].videoList.length; i++) {
+      if (req.session.usernam === videoData[0].videoList[i].userName) {
+        videoIDList.push(videoData[0].videoList[i].videoID);
+        videoData[0].videoList.splice(i, 1);
+      }
+    }
+    const videoList = { Objects: videoIDList };
+    console.log((videoList.Objects));
+    if (videoList.Objects.length < 1) {
+      next();
+    } else {
+      let params = { Bucket: myBucket, Delete: videoList };
+      s3.deleteObjects(params, (err, data) => {
+        console.log('afewf')
+        if (err) res.status(STATUS_SERVER_ERROR).json({error: err.message});
+        else {
+          next();
+        }
+        // res.json(STATUS_OK).json({ success: true })
+      })
+    }
+  })
+}
+
 const getVideoByID = (req, res) => {
 
   const reqVideoID = req.body.videoID;
@@ -135,6 +180,7 @@ const getVideoByID = (req, res) => {
         // console.log('match found');
         res.status(STATUS_OK).json(videoData[0].videoList[i]);
       }
+      
     }
   })
 }
@@ -302,8 +348,10 @@ const deleteVideos = (req, res) => {
 module.exports = {
   uploadVideo,
   getVideoList,
+  postVideoList,
   getAllVideos,
   getFirstVideoName,
+  deleteUserVideos,
   getVideoByID,
   addComment,
   addReplies,

@@ -10,51 +10,50 @@ const STATUS_SERVER_ERROR = 500;
 
 const uploadProfileImage = (req, res) => {
   if (!req.files) return res.status(STATUS_USER_ERROR).send('No files were uploaded.');
-  console.log(req.files)
   if (!(/.png/).test(req.files.profPictureFile.name) && !(/.jpg/).test(req.files.profPictureFile.name) &&
   !(/.bmp/).test(req.files.profPictureFile.name)) {
-    res.writeHead(301, {Location: `${requrl.reqURL}/profile`});
+    res.writeHead(301, {Location: `${requrl.reqURL}/profile/${req.session.username}`});
     res.end();
+  } else {
+    const s3 = new AWS.S3();
+    const myBucket = 'my.unique.bucket.userimages';
+    const myKey = uniqueID();
+    // console.log('my key:', myKey);
+    let params = { Bucket: myBucket, Key: myKey, Body: req.files.profPictureFile.data }
+    s3.putObject(params, (err, data) => {
+      if (err) {
+        res.status(STATUS_SERVER_ERROR).json({err});
+      } else {
+        // console.log("Successfully uploaded data to myBucket/myKey");
+        params = { Bucket: myBucket, Key: myKey };
+        let  url = s3.getSignedUrl('getObject', params);
+        url = url.split(/\?/)[0];
+        // console.log('new url', url);
+
+        User.findOne({username: req.session.username}, (err, userData) => {
+          // console.log(userData);
+          userData.profilePictureID = myKey;
+          userData
+            .save()
+            .then(() => {
+              res.writeHead(301, {Location: `${requrl.reqURL}/profile/${userData.username}`});
+              res.end();
+            })
+            .catch(err => {
+              if (err) res.status(STATUS_SERVER_ERROR).json({err});
+            })
+        })
+      }
+    })
   }
-
-  const s3 = new AWS.S3();
-  const myBucket = 'my.unique.bucket.userimages';
-  const myKey = uniqueID();
-  // console.log('my key:', myKey);
-  let params = { Bucket: myBucket, Key: myKey, Body: req.files.profPictureFile.data }
-  
-  s3.putObject(params, (err, data) => {
-    if (err) {
-      res.status(STATUS_SERVER_ERROR).json({err});
-    } else {
-      // console.log("Successfully uploaded data to myBucket/myKey");
-      params = { Bucket: myBucket, Key: myKey };
-      let  url = s3.getSignedUrl('getObject', params);
-      url = url.split(/\?/)[0];
-      // console.log('new url', url);
-
-      User.findOne({username: req.session.username}, (err, userData) => {
-        // console.log(userData);
-        userData.profilePictureID = myKey;
-        userData
-          .save()
-          .then(() => {
-            res.writeHead(301, {Location: `${requrl.reqURL}/profile`});
-            res.end();
-          })
-          .catch(err => {
-            if (err) res.status(STATUS_SERVER_ERROR).json({err});
-          })
-      })
-    }
-  })
 }
 const deleteProfileImage = (req, res, next) => {
-
+  console.log(req.session.username);
   User.findOne({username: req.session.username}, (err, userdata) => {
     const s3 = new AWS.S3();
     const myBucket = 'my.unique.bucket.userimages';
     const myKey = userdata.profilePictureID;
+    console.log('id',userdata.profilePictureID);
     if (myKey === 'DefaultPic.jpg') {
       next();
     } else {
@@ -105,7 +104,10 @@ const listAllBucketObjects = (req, res) => {
 
 const getUserImage = (req, res) => {
   // console.log(req.session.username)
-  User.findOne({username: req.session.username}, (err, data) => {
+  const usernameReq = req.body.username;
+  console.log('username hreer',usernameReq)
+  User.findOne({username: usernameReq}, (err, data) => {
+    if (err) res.status(STATUS_OK).json({ error: err.stack });
     const s3 = new AWS.S3();
     const myBucket = 'my.unique.bucket.userimages';
     const myKey = data.profilePictureID;

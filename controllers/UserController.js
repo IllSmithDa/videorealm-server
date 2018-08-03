@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const AWS = require("aws-sdk");
 const db = require('../db.js');
+const requrl = require('../reqURL');
 const User = require('../models/UserModel');
 const STATUS_OK = 200;
 const STATUS_USER_ERROR = 422;
@@ -22,12 +23,21 @@ const createUser = (req, res) => {
       })
 }
 
-const checkSecretKey = (req, res, next) => {
+const checkSecretKey = (req, res) => {
   const secretReq = req.body.secretKey;
   if (secretReq !== process.env.SECRET_KEY) {
     res.json({ error: 'Secret key is not correct' });
   } else {
     res.status(200).json({ sucess: true });
+  }
+}
+
+const checkAdminKey = (req, res) => {
+  const adminReq = req.body.adminPassword;
+  if (adminReq !== process.env.ADMIN_KEY) {
+    res.json({error: 'Admin key is not correct'});
+  } else {
+    res.status(STATUS_OK).json({ success: true });
   }
 }
 
@@ -42,27 +52,70 @@ checkUsername = (req, res) => {
     }
   })
 }
+
+const userNameMatch = (req, res) => {
+  if (req.session.username === null || req.session.username === undefined || req.session.username === '') {
+    res.json({error: 'user not logged on'});
+  } else {
+    const userNameReq = req.body.username;
+    if (userNameReq !== req.session.username) {
+      res.json({error: 'usernames do not match'});
+    } else {
+      res.status(STATUS_OK).json({ success: true });
+    }
+  }
+}
+
 const checkEmail = (req, res) => {
   const emailReq = req.body.email;
   User.find({ email: emailReq}, (err, userData) => {
-    if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message })
+    if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message });
     if (userData[0] === null || userData[0] === undefined || userData[0] === '') {
-      console.log('no email exists')
+      // console.log('no email exists')
       res.status(STATUS_OK).json({ sucess: true})
     } else {
-      console.log(userData);
+      // console.log(userData);
       res.json({ error: 'email exists'})
     }
   })
 }
+const deleteUser = (req, res) => {
+  User.find({}, (err, userData) => {
+    if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message });
+    console.log('username',userData);
+    let j = null;
+    for (let i = 0; i < userData.length; i++) {
+      if (req.session.username === userData[i].username) {
+        console.log('user found', userData[i].username)
+        userData.splice(i, 1);
+        j = i
+      }
+    }
+    console.log('new data',userData)
+    res.status(STATUS_OK).json({ success: true });
+    
+    userData[j]
+      .save()
+      .then((product) => {
+        console.log('reached', product);
+        res.status(STATUS_OK).json({ success: true });
+      })
+      .catch(err => {
+        if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message });
+      })
+      
+  })
+}
+
 createAwsUser = (req, res) => {
+ /*
   const usernameReq = req.body.username;
   const passwordReq = req.body.password;
   const emailReq = req.body.email;
   const foundTable = false;
-  console.log(usernameReq);
-  console.log(passwordReq );
-  console.log(emailReq);
+  // console.log(usernameReq);
+  // console.log(passwordReq );
+  // console.log(emailReq);
   
   params = {};
   const dynamodb = new AWS.DynamoDB();
@@ -78,7 +131,7 @@ createAwsUser = (req, res) => {
       }
       // create new table if table cannot be found
       if (!foundTable) {
-        console.log('reached');
+        // console.log('reached');
         const params = {
           TableName : "UserTable",
           KeySchema: [       
@@ -98,9 +151,9 @@ createAwsUser = (req, res) => {
         };
         dynamodb.createTable(params, (err, data) => {
           //if (err) res.status(STATUS_SERVER_ERROR).json({error: err.stack });
-          if (err)  console.error("Unable to create table. Error JSON:", JSON.stringify(err, null, 2));
+          if (err)  // console.error("Unable to create table. Error JSON:", JSON.stringify(err, null, 2));
           else {
-            console.log("Created table. Table description JSON:", JSON.stringify(data, null, 2));
+            // console.log("Created table. Table description JSON:", JSON.stringify(data, null, 2));
           }
         });
       }
@@ -119,33 +172,33 @@ createAwsUser = (req, res) => {
         else {
           req.session.username = usernameReq;
           req.session.password = passwordReq;
-          console.log('hello');
+          // console.log('hello');
           res.status(STATUS_OK).json(userData);
         }
       })
     }
   }) 
+  */
 }
-
 const loginUser = (req, res) => {
   const usernameReq = req.body.username;
   const passwordReq = req.body.password;
-  console.log(usernameReq);
-  console.log(passwordReq);
+  // console.log(usernameReq);
+  // console.log(passwordReq);
   db('userTable')
     .where('username', usernameReq)
     .then((post) => {
       if (post.length === 0) {
-        console.log('incorrect username and/or password');
+        // console.log('incorrect username and/or password');
         return;
       }
       if (post[0].password !== passwordReq) {
-        console.log('incorrect username and/or password');
+        // console.log('incorrect username and/or password');
         return;
       }
       req.session.username = usernameReq;
       req.session.password = passwordReq;
-      console.log('session', req.session.username)
+      // console.log('session', req.session.username)
       res.status(STATUS_OK).json(req.session.username);
     })
     .catch(function(err) {
@@ -155,7 +208,7 @@ const loginUser = (req, res) => {
 const mongoLogin = (req, res) => {
   const usernameReq = req.body.username;
   const passwordReq = req.body.password;
-  console.log(passwordReq);
+  // console.log(passwordReq);
   User.findOne({username: usernameReq}, (err, user) => {
     if (err || user === null) {
       res.json({error: "incorrect username/password"});
@@ -188,7 +241,7 @@ const getUsername = (req, res) => {
   if (req.session.username === null || req.session.username === undefined || req.session.username === '') {
     res.json({error: 'user not logged on'});
   } else {
-    console.log('username: ', req.session.username);
+    // console.log('username: ', req.session.username);
     res.status(STATUS_OK).json(req.session.username);
   }
 }
@@ -198,7 +251,7 @@ const getUserID = (req, res) => {
     if (err) {
       res.status(STATUS_USER_ERROR).json(err);
     }
-    console.log(userData);
+    // console.log(userData);
     res.status(STATUS_OK).json(userData._id);
   })
 }
@@ -211,7 +264,7 @@ const passwordHash = (req, res, next) => {
       bcrypt.hash(password, salt, (err, hashedData) => {
       if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message });
       req.body.password = hashedData;
-      console.log(hashedData)
+      // console.log(hashedData)
       next();
      })
   })
@@ -221,10 +274,13 @@ module.exports = {
   loginUser,
   createUser,
   checkUsername,
+  deleteUser,
   checkSecretKey,
+  checkAdminKey,
   checkEmail,
   createAwsUser,
   getUsername,
+  userNameMatch,
   logoutUser, 
   mongoLogin,
   getUserID,
