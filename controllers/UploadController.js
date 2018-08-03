@@ -17,7 +17,8 @@ const uploadProfileImage = (req, res) => {
   } else {
     const s3 = new AWS.S3();
     const myBucket = 'my.unique.bucket.userimages';
-    const myKey = uniqueID();
+    let myKey = uniqueID();
+    myKey = `${myKey}.jpg`
     // console.log('my key:', myKey);
     let params = { Bucket: myBucket, Key: myKey, Body: req.files.profPictureFile.data }
     s3.putObject(params, (err, data) => {
