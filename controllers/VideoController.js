@@ -169,7 +169,6 @@ const deleteUserVideos = (req, res, next) => {
 }
 
 const getVideoByID = (req, res) => {
-
   const reqVideoID = req.body.videoID;
   Video.find({}, (err, videoData) => {
     if (err) res.state(STATUS_USER_ERROR).json(err)
@@ -179,8 +178,11 @@ const getVideoByID = (req, res) => {
       if (reqVideoID === videoData[0].videoList[i].videoID) {
         // console.log('match found');
         res.status(STATUS_OK).json(videoData[0].videoList[i]);
+        break;
       }
-      
+      if (i === videoData[0].videoList.length - 1) {
+        res.json({ error: 'video does not exist' });
+      }
     }
   })
 }

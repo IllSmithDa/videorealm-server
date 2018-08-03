@@ -41,17 +41,18 @@ const checkAdminKey = (req, res) => {
   }
 }
 
-checkUsername = (req, res) => {
+const checkUsername = (req, res) => {
   const usernameReq = req.body.username;
   User.find({ username: usernameReq}, (err, userData) => {
     if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message })
     if (userData[0] === null || userData[0] === undefined || userData[0] === '') {
-      res.status(STATUS_OK).json({ sucess: true})
+      res.status(STATUS_OK).json({ success: true})
     } else {
       res.json({ error: 'username exists'})
     }
   })
 }
+
 
 const userNameMatch = (req, res) => {
   if (req.session.username === null || req.session.username === undefined || req.session.username === '') {
