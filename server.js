@@ -24,6 +24,8 @@ server.use(bodyParser.json());
 const corsOption = {
   origin: requrl.reqURL,
   credentials: true,
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  preflightContinue: false
 };
 server.use(cors(corsOption));
 server.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))

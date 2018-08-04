@@ -16,6 +16,8 @@ module.exports = (server) => {
     .post(AccountController.mongoLogin)
   server.route('/getUsername')
     .get(AccountController.getUsername)
+  server.route('/getUserData')
+    .post(AccountController.getUserData)  
   server.route('/userNameMatch')
     .post(AccountController.userNameMatch)
   server.route('/getUserID')

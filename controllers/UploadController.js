@@ -33,7 +33,7 @@ const uploadProfileImage = (req, res) => {
 
         User.findOne({username: req.session.username}, (err, userData) => {
           // console.log(userData);
-          userData.profilePictureID = myKey;
+          userData.profilePictureID = url;
           userData
             .save()
             .then(() => {
@@ -106,7 +106,7 @@ const listAllBucketObjects = (req, res) => {
 const getUserImage = (req, res) => {
   // console.log(req.session.username)
   const usernameReq = req.body.username;
-  console.log('username hreer',usernameReq)
+  console.log('username ',usernameReq)
   User.findOne({username: usernameReq}, (err, data) => {
     if (err) res.status(STATUS_OK).json({ error: err.stack });
     const s3 = new AWS.S3();

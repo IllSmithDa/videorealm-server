@@ -67,6 +67,14 @@ const userNameMatch = (req, res) => {
   }
 }
 
+const getUserData = (req, res) => {
+  User.find({username: req.body.username}, (err, userData) => {
+    if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack });
+    console.log('userdata', userData);
+    res.status(STATUS_OK).json(userData);
+  })
+}
+
 const checkEmail = (req, res) => {
   const emailReq = req.body.email;
   User.find({ email: emailReq}, (err, userData) => {
@@ -275,6 +283,7 @@ module.exports = {
   loginUser,
   createUser,
   checkUsername,
+  getUserData,
   deleteUser,
   checkSecretKey,
   checkAdminKey,
