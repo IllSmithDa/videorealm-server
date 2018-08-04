@@ -1,4 +1,5 @@
 // Update with your config settings.
+// 
 const dotenv =  require('dotenv').config();
 
 module.exports = {
@@ -9,10 +10,10 @@ module.exports = {
       /*
       filename: './database/socialclub.db',
       */
-     host: `${process.env.RDS_HOSTNAME}`, // provide the AWS or Firebase url 
-     database: `${process.env.RDS_DATABASE}`,
-     user:  `${process.env.RDS_USERNAME}`,
-     password: `${process.env.RDS_PASSWORD}`
+      host: `${process.env.RDS_HOSTNAME}`, // provide the AWS or Firebase url 
+      database: `${process.env.RDS_DATABASE}`,
+      user:  `${process.env.RDS_USERNAME}`,
+      password: `${process.env.RDS_PASSWORD}`
     },
     migrations: {
       tableName: 'migrations'

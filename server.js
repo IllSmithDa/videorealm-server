@@ -28,7 +28,7 @@ const corsOption = {
   preflightContinue: false
 };
 server.use(cors(corsOption));
-server.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
+server.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 /*
 server.use((req, res, next) => {
   console.log(req.headers)
@@ -48,10 +48,10 @@ server.use(session({
   cookieName: 'session',
   // duration: 30 * 60 * 1000,
   // activeDuration: 5 * 60 * 1000,
-}))
+}));
 server.listen(process.env.PORT || port, () => {
-  console.log(`server listening on port ${port}`);
-})
+  // console.log(`server listening on port ${port}`);
+});
 
 routes(server);
 // got credentials working through this help
@@ -60,16 +60,16 @@ routes(server);
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESSKEYID,
   secretAccessKey: process.env.AWS_SECRETACCESSKEY,
-  region: "us-west-1",
-})
+  region: 'us-west-1',
+});
 
 mongoose.Promise = global.Promise;
 mongoose
-.connect(process.env.MONGOLAB_KEY)
-// .connect("mongodb://localhost:27017/loanie")
-.then(function(db) {
-  console.log("Database connected successfully to Mongolab");
-})
-.catch(function(err) {
-  console.log("DB connection failed..", err.message);
-});
+  .connect(process.env.MONGOLAB_KEY)
+  // .connect("mongodb://localhost:27017/loanie")
+  .then(function() {
+    console.log('Database connected successfully to Mongolab');
+  })
+  .catch(function(err) {
+    console.log('DB connection failed..', err.message);
+  });

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
 const BetaKeySchema = new mongoose.Schema({
   emailList: [{
@@ -12,6 +12,6 @@ const BetaKeySchema = new mongoose.Schema({
       default: false,
     }
   }]
-},{ usePushEach: true })
+},{ usePushEach: true });
 
 module.exports = mongoose.model('BetaKey', BetaKeySchema);

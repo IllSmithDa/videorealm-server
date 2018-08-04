@@ -1,4 +1,4 @@
-const db = require('../db.js');
+// const db = require('../db.js');
 var AWS = require('aws-sdk');
 const uniqueID = require('uniqid');
 const User = require('../models/UserModel');
@@ -18,10 +18,10 @@ const uploadProfileImage = (req, res) => {
     const s3 = new AWS.S3();
     const myBucket = 'my.unique.bucket.userimages';
     let myKey = uniqueID();
-    myKey = `${myKey}.jpg`
+    myKey = `${myKey}.jpg`;
     // console.log('my key:', myKey);
-    let params = { Bucket: myBucket, Key: myKey, Body: req.files.profPictureFile.data }
-    s3.putObject(params, (err, data) => {
+    let params = { Bucket: myBucket, Key: myKey, Body: req.files.profPictureFile.data };
+    s3.putObject(params, (err) => {
       if (err) {
         res.status(STATUS_SERVER_ERROR).json({err});
       } else {
@@ -42,71 +42,73 @@ const uploadProfileImage = (req, res) => {
             })
             .catch(err => {
               if (err) res.status(STATUS_SERVER_ERROR).json({err});
-            })
-        })
+            });
+        });
       }
-    })
+    });
   }
-}
+};
+
 const deleteProfileImage = (req, res, next) => {
-  console.log(req.session.username);
+  // console.log(req.session.username);
   User.findOne({username: req.session.username}, (err, userdata) => {
     const s3 = new AWS.S3();
     const myBucket = 'my.unique.bucket.userimages';
     const myKey = userdata.profilePictureID;
-    console.log('id',userdata.profilePictureID);
+    // console.log('id',userdata.profilePictureID);
     if (myKey === 'DefaultPic.jpg') {
       next();
     } else {
       // console.log('key', myKey);
       let params = { Bucket: myBucket, Key: myKey};
-      s3.deleteObject(params, (err, data) => {
+      s3.deleteObject(params, (err) => {
         if (err) {
           if (err) res.status(STATUS_SERVER_ERROR).json({err});
         } else {
           // console.log(data)
           next();
         }
-      })
+      });
     }
-  })
-}
+  });
+};
+
 const addDefaultPic = (req, res) => {
   if (!req.files) return res.status(400).send('No files were uploaded.');
   const s3 = new AWS.S3();
   const myBucket = 'my.unique.bucket.userimages';
   const myKey = 'DefaultPic.jpg';
-  const params = { Bucket: myBucket, Key: myKey, Body: req.files.profPictureFile.data }
+  const params = { Bucket: myBucket, Key: myKey, Body: req.files.profPictureFile.data };
   s3.putObject(params, (err) => {
     if (err) {
       // console.log(err);
     } else {
       // console.log("Successfully uploaded data to myBucket/myKey");
       const paramImage = {Bucket: myBucket, Key: myKey};
-      s3.getObject(paramImage, (err, data) => {
+      s3.getObject(paramImage, (err) => {
         if (err) res.status(STATUS_SERVER_ERROR).json({err});
         res.writeHead(301, {Location: `${requrl.reqURL}/adminpage`});
         res.end();
-      })
+      });
     }
-  })
-}
+  });
+};
 
 const listAllBucketObjects = (req, res) => {
   const s3 = new AWS.S3();
   const myBucket = 'my.unique.bucket.userimages';
   const numKeys = 2;
-  const params = { Bucket: myBucket, MaxKeys: numKeys}
+  const params = { Bucket: myBucket, MaxKeys: numKeys};
   s3.listObjects(params, (err, data) => {
     // console.log(data);
-    res.status(STATUS_USER_ERROR).json(data)
-  })
-}
+    res.status(STATUS_USER_ERROR).json(data);
+  });
+};
 
 const getUserImage = (req, res) => {
   // console.log(req.session.username)
   const usernameReq = req.body.username;
-  console.log('username ',usernameReq)
+  // console.log('username ',usernameReq)
   User.findOne({username: usernameReq}, (err, data) => {
     if (err) res.status(STATUS_OK).json({ error: err.stack });
     const s3 = new AWS.S3();
@@ -115,13 +117,14 @@ const getUserImage = (req, res) => {
     const params = { Bucket: myBucket, Key: myKey};
     let url = s3.getSignedUrl('getObject', params);
     url = url.split(/\?/)[0];
-    res.status(STATUS_OK).json(url)
-  })
-}
+    res.status(STATUS_OK).json(url);
+  });
+};
+
 module.exports = {
   uploadProfileImage,
   deleteProfileImage,
   listAllBucketObjects,
   getUserImage,
   addDefaultPic
-}
+};
