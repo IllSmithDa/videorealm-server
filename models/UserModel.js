@@ -17,7 +17,7 @@ const UserSchema = new mongoose.Schema({
   },
   profilePictureID: {
     type: String,
-    default: 'DefaultPic.jpg'
+    default: 'https://s3.amazonaws.com/my.unique.bucket.userimages/DefaultPic.jpg'
   },
   videoList: [{
     videoName: {

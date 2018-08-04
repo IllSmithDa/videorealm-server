@@ -1,9 +1,10 @@
 const AccountController = require('../controllers/UserController');
 const UploadController = require('../controllers/UploadController');
 const VideoController = require('../controllers/VideoController');
+const BetaKeyController = require('../controllers/BetaKeyControllers');
 module.exports = (server) => {
   server.route('/userCreate')
-    .post(AccountController.passwordHash, AccountController.createUser)
+    .post(AccountController.passwordHash, AccountController.createUser, BetaKeyController.removeBetaKey)
   server.route('/createAwsUser')
     .post(AccountController.passwordHash, AccountController.createAwsUser)
   server.route('/checkUsername')
@@ -64,4 +65,18 @@ module.exports = (server) => {
     .get(AccountController.deleteUser)
   server.route('/deleteUserFinal')
     .get(VideoController.deleteUserVideos, UploadController.deleteProfileImage, AccountController.deleteUser)
+  server.route('/addNewKey')
+    .get(BetaKeyController.addNewKey)
+  server.route('/createBetaTable')
+    .get(BetaKeyController.createNewTable)
+  server.route('/doesKeyExist')
+    .post(BetaKeyController.doesKeyExist)
+  server.route('/deleteKey')
+    .post(BetaKeyController.deleteKey)
+  server.route('/getUnsentKeys')
+    .get(BetaKeyController.getUnsentKeys)
+  server.route('/sendEmail')
+    .get(BetaKeyController.sendEmail)
+  server.route('/sendBetaKey')
+    .post(BetaKeyController.sendBetaKey)
 }

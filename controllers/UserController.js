@@ -3,11 +3,12 @@ const AWS = require("aws-sdk");
 const db = require('../db.js');
 const requrl = require('../reqURL');
 const User = require('../models/UserModel');
+const BetaKey = require('../models/BetaKey');
 const STATUS_OK = 200;
 const STATUS_USER_ERROR = 422;
 const STATUS_SERVER_ERROR = 500;
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const usernameReq = req.body.username;
   const passwordReq = req.body.password;
   const emailReq  = req.body.email;
@@ -16,7 +17,7 @@ const createUser = (req, res) => {
       .save()
       .then((userData) => {
         req.session.username = usernameReq;
-        res.status(STATUS_OK).json(userData);
+        next();
       })
       .catch((err) => {
         res.status(STATUS_USER_ERROR).json(err);
@@ -24,12 +25,19 @@ const createUser = (req, res) => {
 }
 
 const checkSecretKey = (req, res) => {
-  const secretReq = req.body.secretKey;
-  if (secretReq !== process.env.SECRET_KEY) {
-    res.json({ error: 'Secret key is not correct' });
-  } else {
-    res.status(200).json({ sucess: true });
-  }
+  const recievedKey = req.body.secretKey;
+  BetaKey.find({}, (err, keyData) => {
+    if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack });
+    for (let i = 0; i < keyData[0].betaKey.length; i++) {
+      if (recievedKey === keyData[0].betaKey[i].key) {
+        res.status(STATUS_OK).json({ success: 'Key was found'})
+        break;
+      }
+      if (i === keyData[0].betaKey.length - 1) {
+        res.json({ error: 'Could not find key'})
+      }
+    }
+  })
 }
 
 const checkAdminKey = (req, res) => {
