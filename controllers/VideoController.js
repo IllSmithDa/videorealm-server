@@ -235,8 +235,10 @@ const addComment = (req, res) => {
           if (err) res.state(STATUS_USER_ERROR).json({ error: err.message});
           let index = 0;
           for(let j = 0; j < userData.videoList.length; j++) {
-            const commentIndex = userData.videoList[j].comments.length;
-            userData.videoList[j].comments.push({ comment, username: commentUsername, commentIndex });
+            if (videoID === userData.videoList[j].videoID) {
+              const commentIndex = userData.videoList[j].comments.length;
+              userData.videoList[j].comments.push({ comment, username: commentUsername, commentIndex });
+            }
           }
           userData
             .save()
