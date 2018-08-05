@@ -60,35 +60,7 @@ const uploadVideo = (req, res) => {
           .catch((err) => {
             res.status(STATUS_SERVER_ERROR).json({ error: err.message});
           });
-      });
-  
-    // read newly created thumbnail file to convert it to buffer   
-    /*
-    const video = new Video({ videoList: [{ userName: req.session.username, videoID: myKey, videoURL: url, 
-     videoName: req.body.videoName, videoThumbnailID: thumbKey, videoThumbURL: thumbURL }] });
-     video.save()
-       .then(() => {
-         User.findOne({ username: req.session.username }, (err, userData) => {
-           const video2 = { userName: req.session.username, videoID: myKey, videoURL: url, 
-             videoName: req.body.videoName, videoThumbnailID: thumbKey, videoThumbURL: thumbURL };
-           // // console.log(video);
-           userData.videoList.push(video2);
-           userData
-           .save()
-           .then(() => {
-             res.writeHead(301, {Location: `https://friendrealm.herokuapp.com/account`});
-             res.end();
-           })
-           .catch((err) => {
-             res.status(STATUS_SERVER_ERROR).json({ error: err.message});
-           })
-         })
-       })
-       .catch((err) => {
-         res.status(STATUS_SERVER_ERROR).json({ error: err.message});
-       })
-     */
-            
+      });            
     });
   }
 };

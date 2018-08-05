@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jasmine tests/*.js",
     "start": "nodemon server.js"
   },
   "repository": {
@@ -37,6 +37,7 @@
     "mysql": "^2.15.0",
     "nodemon": "^1.17.5",
     "path": "^0.12.7",
+    "request": "^2.87.0",
     "serve-favicon": "^2.5.0",
     "sqlite3": "^4.0.1",
     "uniqid": "^5.0.3"
@@ -49,6 +50,7 @@
     "eslint-config-airbnb": "^17.0.0",
     "eslint-config-airbnb-base": "^13.0.0",
     "eslint-plugin-import": "^2.13.0",
-    "eslint-plugin-node": "^7.0.1"
+    "eslint-plugin-node": "^7.0.1",
+    "jasmine": "^3.1.0"
   }
 }
