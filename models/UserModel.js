@@ -42,6 +42,10 @@ const UserSchema = new mongoose.Schema({
       comment: {
         type: String
       },
+      commentIndex: {
+        type: Number,
+        required: true,
+      },
       replies: [{
         username:{
           type: String

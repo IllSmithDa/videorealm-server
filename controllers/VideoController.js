@@ -224,7 +224,8 @@ const addComment = (req, res) => {
     
     for (let i = 0; i < videoData[0].videoList.length; i++) {
       if (videoID === videoData[0].videoList[i].videoID) {
-        videoData[0].videoList[i].comments.push({ comment, username: commentUsername});
+        const commentIndex = videoData[0].videoList[i].comments.length;
+        videoData[0].videoList[i].comments.push({ comment, username: commentUsername, commentIndex});
       }
     }
     videoData[0]
@@ -234,11 +235,8 @@ const addComment = (req, res) => {
           if (err) res.state(STATUS_USER_ERROR).json({ error: err.message});
           let index = 0;
           for(let j = 0; j < userData.videoList.length; j++) {
-            if (videoID === userData.videoList[j].videoID) {
-              // // console.log('added comment');
-              userData.videoList[j].comments.push({ comment, username: commentUsername });
-              index = j;
-            }
+            const commentIndex = userData.videoList[j].comments.length;
+            userData.videoList[j].comments.push({ comment, username: commentUsername, commentIndex });
           }
           userData
             .save()
@@ -347,7 +345,7 @@ const deleteVideos = (req, res) => {
               });
           });
  
-        })
+        })  
         .catch((err) => {
           res.status(STATUS_SERVER_ERROR).json({ error: err.message });
         });

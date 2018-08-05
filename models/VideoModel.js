@@ -25,6 +25,10 @@ const VideoSchema = new Schema({
       comment: {
         type: String
       },
+      commentIndex: {
+        type: Number,
+        default: 0,
+      },
       replies: [{
         username:{
           type: String
