@@ -26,12 +26,22 @@ const uploadVideo = (req, res) => {
       params = {Bucket: myBucket, Key: myKey};
       let signedurl = s3.getSignedUrl('getObject', params);
       // // console.log('The URL is', url);
-      
+      // getting the date for video creation
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June',
+        'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'
+      ];
+      const myDate = new Date();
+      const getYear = myDate.getFullYear().toString();
+      const getMonth = monthNames[myDate.getMonth()];
+      const getDay = myDate.getDate().toString();
+      const fullDate = `${getMonth} ${getDay}, ${getYear}`;
       let url = signedurl.split(/\?/)[0];
+
       const video = {
         userName: req.session.username,
         videoID: myKey, videoURL: url, 
         videoName: req.body.videoName,
+        videoDate: fullDate,
       };
 
       Video.find({}, (err, videoData) => {
@@ -328,24 +338,55 @@ const deleteVideos = (req, res) => {
 };
 
 const viewUpdate = (req, res) => {
-  const {views, videoID} = req.body;
+  const { videoID, videoUploader } = req.body;
   Video.find({}, ( err, videoData) => {
     if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message });
     // console.log(videoData[0].videoList);  
     for (let i = 0; i < videoData[0].videoList.length; i++) {
       if (videoID === videoData[0].videoList[i].videoID) {
         videoData[0].videoList[i].views += 1;
+        break;
       }
     }
     videoData[0]
       .save()
       .then(() => {
-        res.status(STATUS_OK).json({ sucess: true });
+        User.findOne({ username: videoUploader }, (err, userData) => {
+          if (err) res.state(STATUS_USER_ERROR).json({ error: err.message});
+          let tempIndex = 0;
+          for (let i = 0; i < userData.videoList.length; i++) { 
+            // both need to be strings for correct comparison
+            if (userData.videoList[i].videoID === videoID) {
+              userData.videoList[i].views += 1;
+              break;
+            } 
+          }
+          userData
+            .save()
+            .then((data) => {
+              res.status(200).json(data.videoList[tempIndex].views);  
+            })
+            .catch((err) => {
+              res.status(STATUS_SERVER_ERROR).json({ error: err.message });
+            });
+        });
       })
       .catch((err) => {
         res.status(STATUS_SERVER_ERROR).json({ error : err.stack});
-      })
+      });
   });
+};
+
+const createVideoDate = (req, res) => {
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June',
+    'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'
+  ];
+  const myDate = new Date();
+  const getYear = myDate.getFullYear().toString();
+  const getMonth = monthNames[myDate.getMonth()];
+  const getDay = myDate.getDate().toString();
+  const fullDate = `${getMonth} ${getDay}, ${getYear}`;
+  res.json(fullDate);
 };
 
 module.exports = {
@@ -361,5 +402,6 @@ module.exports = {
   deleteVideos,
   countNumVideos,
   videoSearch,
-  viewUpdate
+  viewUpdate,
+  createVideoDate
 };

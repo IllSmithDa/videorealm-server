@@ -24,6 +24,10 @@ const UserSchema = new mongoose.Schema({
       type: String,
       required: true
     },
+    videoDate: {
+      type: String,
+      default: 'Aug 6, 2018',
+    },
     videoID :{
       type: String,
       required: true,

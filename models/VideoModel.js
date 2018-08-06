@@ -7,6 +7,10 @@ const VideoSchema = new Schema({
       type: String,
       required: true
     },
+    videoDate: {
+      type: String,
+      required: true,
+    },
     videoID :{
       type: String,
       required: true,
