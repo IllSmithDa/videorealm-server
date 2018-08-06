@@ -79,4 +79,6 @@ module.exports = (server) => {
     .get(BetaKeyController.sendEmail);
   server.route('/sendBetaKey')
     .post(BetaKeyController.sendBetaKey);
+  server.route('viewUpdate')
+    .get(VideoController.viewUpdate);
 };

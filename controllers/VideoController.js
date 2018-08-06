@@ -327,6 +327,27 @@ const deleteVideos = (req, res) => {
   });
 };
 
+const viewUpdate = (req, res) => {
+  const {views, videoID} = req.body;
+  Video.find({}, ( err, videoData) => {
+    if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message });
+    // console.log(videoData[0].videoList);  
+    for (let i = 0; i < videoData[0].videoList.length; i++) {
+      if (videoID === videoData[0].videoList[i].videoID) {
+        videoData[0].videoList[i].views += 1;
+      }
+    }
+    videoData[0]
+      .save()
+      .then(() => {
+        res.status(STATUS_OK).json({ sucess: true });
+      })
+      .catch((err) => {
+        res.status(STATUS_SERVER_ERROR).json({ error : err.stack});
+      })
+  });
+};
+
 module.exports = {
   uploadVideo,
   getVideoList,
@@ -339,5 +360,6 @@ module.exports = {
   addReplies,
   deleteVideos,
   countNumVideos,
-  videoSearch
+  videoSearch,
+  viewUpdate
 };
