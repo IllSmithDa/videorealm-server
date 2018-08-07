@@ -83,4 +83,10 @@ module.exports = (server) => {
     .post(VideoController.viewUpdate);
   server.route('/createVideoDate')
     .get(VideoController.createVideoDate);
+  server.route('/changeUsername')
+    .post(AccountController.changeUsername);
+  server.route('/changePassword')
+    .post(AccountController.passwordHash, AccountController.changePassword);
+  server.route('/checkPassword')
+    .post(AccountController.checkPassword);
 };

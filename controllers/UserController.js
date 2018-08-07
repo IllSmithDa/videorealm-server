@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const db = require('../db.js');
 const User = require('../models/UserModel');
+const Video = require('../models/VideoModel');
 const BetaKey = require('../models/BetaKey');
 const STATUS_OK = 200;
 const STATUS_USER_ERROR = 422;
@@ -96,9 +97,17 @@ const checkEmail = (req, res) => {
 };
 
 const deleteUser = (req, res) => {
-  User.find({}, (err, userData) => {
-    if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message });
-    // console.log('username',userData);
+  User.find({ username: req.session.username })
+    .remove()
+    .exec()
+    .then(() => {
+      res.status(STATUS_OK).json({ success: true });
+    })
+    .catch(err => {
+      if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message });
+    });
+
+  /*
     let j = null;
     for (let i = 0; i < userData.length; i++) {
       if (req.session.username === userData[i].username) {
@@ -119,7 +128,7 @@ const deleteUser = (req, res) => {
       .catch(err => {
         if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message });
       });
-  });
+      */
 };
 
 const createAwsUser = () => {
@@ -262,6 +271,83 @@ const getUsername = (req, res) => {
   }
 };
 
+const changeUsername = (req, res) => {
+  const { username, newUsername } = req.body;
+  User.findOne({ username: newUsername }, (err, userData) => {
+    if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack });
+    if (userData === !null) {
+      res.json({ error: 'username already exists' });
+    } else {
+      User.findOne({ username }, (err, userData) => {
+        if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack });
+        for (let i = 0; i < userData.videoList.length; i++) {
+          userData.videoList[i].userName = newUsername;
+        }
+        userData.username = newUsername;
+        userData
+          .save()
+          .then((data) => {
+            Video.find({}, (err, videoData) => {
+              if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack });
+              for (let j = 0; j < videoData[0].videoList.length; j++) {
+                if (videoData[0].videoList[j].userName === username) {
+                  videoData[0].videoList[j].userName = newUsername;
+                }
+              }
+              videoData[0]
+                .save()
+                .then(() => {
+                  console.log(data);
+                  req.session.username = newUsername;
+                  res.status(STATUS_OK).json(data.username);
+                })
+                .catch((err) => {
+                  res.status(STATUS_SERVER_ERROR).json({ error: err.stack });
+                });
+            });
+          })
+          .catch((err) => {
+            res.status(STATUS_SERVER_ERROR).json({ error: err.stack });
+          });
+      });
+    }
+  });
+};
+
+const checkPassword = (req, res) => {
+  const { password } = req.body;
+  const username = req.session.username; 
+  User.findOne({ username }, (err, userData) => {
+    if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack });
+    bcrypt
+      .compare(password, userData.password, (err, match) => {
+        if (err) res.status(STATUS_SERVER_ERROR).json({error: err.message});
+        if (!match) {
+          res.json({error: 'incorrect username/password'});
+        } else {
+          res.status(STATUS_OK).json({ success: true});
+        }
+      });
+  });
+};
+
+const changePassword = (req, res) => {
+  const { password } = req.body;
+  const username = req.session.username; 
+  User.findOne({ username }, (err, userData) => {
+    if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack });
+    userData.password = password;
+    userData
+      .save()
+      .then((data) => {
+        res.status(STATUS_OK).json(data);
+      })
+      .catch((err) => {
+        res.status(STATUS_SERVER_ERROR).json({ error: err.stack });
+      });
+  });
+};
+
 const getUserID = (req, res) => {
   User.find({username: req.session.username}, (err, userData) => {
     if (err) {
@@ -302,5 +388,8 @@ module.exports = {
   logoutUser, 
   mongoLogin,
   getUserID,
-  passwordHash
+  passwordHash,
+  changeUsername,
+  changePassword,
+  checkPassword
 };
