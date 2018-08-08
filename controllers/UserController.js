@@ -3,6 +3,9 @@ const db = require('../db.js');
 const User = require('../models/UserModel');
 const Video = require('../models/VideoModel');
 const BetaKey = require('../models/BetaKey');
+const sgMail = require('@sendgrid/mail');
+const requrl = require('../reqURL');
+const cryptoRandomString = require('crypto-random-string');
 const STATUS_OK = 200;
 const STATUS_USER_ERROR = 422;
 const STATUS_SERVER_ERROR = 500;
@@ -21,6 +24,129 @@ const createUser = (req, res, next) => {
     .catch((err) => {
       res.status(STATUS_USER_ERROR).json(err);
     });
+};
+
+const checkMissingPWKey = (req, res) => {
+  const { myKey} = req.body;
+  User.find({ missingPW: myKey }, (err, userData) => {
+    console.log(userData);
+    if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack });
+    if (!userData[0]) {
+      res.json({ error: 'Invalid key'});
+    } else {
+      res.status(STATUS_OK).json(userData[0].username);
+    }
+  });
+};
+
+const missingPw = (req, res) => {
+  const { username, password } = req.body;
+  console.log(password);
+  User.find({ username }, (err, userData) => {
+    if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack });
+    if (userData[0] === undefined) {
+      res.json({ error: 'user with that email does not exist'});
+    } else {
+      userData[0].password = password;
+      userData[0].missingPW = '';
+      userData[0]
+        .save()
+        .then(() => {
+          console.log(userData[0]);
+          res.status(STATUS_OK).json({success: true});
+        })
+        .catch((err) => {
+          if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack });
+        });
+    }
+  });
+};
+
+const sendPwEmail = (req, res) => {
+  const { email } = req.body;
+  const newKey = cryptoRandomString(10);
+
+  User.find({ email }, (err, userData) => {
+    if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack });
+    if (userData[0] === undefined) {
+      res.json({ error: 'user with that email does not exist'});
+    } else {
+      userData[0].missingPW = newKey;
+      userData[0]
+        .save()
+        .then(() => {
+          sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+          const msg = {
+            to: email,
+            from: process.env.SECRET_EMAIL,
+            subject: 'Videorealm Password',
+            text: 'Videorealm is Here',
+            html: `Here is your key to reset your password. 
+            Use this link to submit your key and reset your password
+            key: ${newKey}.
+            link: ${requrl.reqURL}/lostpassword`,
+          };
+          sgMail.send(msg);
+          res.status(STATUS_OK).json({ success: true });
+        })
+        .catch((err) => {
+          if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack });
+        });
+    }
+  });
+};
+
+const missingUsername = (req, res) => {
+  const { myKey } = req.body;
+  User.find({ missingUsername: myKey }, (err, userData) => {
+    if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack });
+    if (userData[0] === undefined) {
+      res.json({ error: 'user with that key does not exist'});
+    } else {
+      userData[0].missingUsername = '';
+      userData[0]
+        .save()
+        .then(() => {
+          res.status(STATUS_OK).json(userData[0].username);
+        })
+        .catch((err) => {
+          if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack });
+        });
+    }
+  });
+};
+
+const sendUsernameEmail = (req, res) => {
+  const email = req.body.email;
+  const newKey = cryptoRandomString(10);
+
+  User.find({ email }, (err, userData) => {
+    if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack });
+    if (userData[0] === undefined) {
+      res.json({ error: 'user with that email does not exist'});
+    } else {
+      userData[0].missingUsername = newKey;
+      userData[0]
+        .save()
+        .then(() => {
+          sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+          const msg = {
+            to: email,
+            from: process.env.SECRET_EMAIL,
+            subject: 'Videorealm Password',
+            text: 'Videorealm is Here',
+            html: `Here is your key to retrieve your username. key: ${newKey},
+            Use this link to submit your key and retrieve your username
+            link: ${requrl.reqURL}/lostusername`,
+          };
+          sgMail.send(msg);
+          res.status(STATUS_OK).json({ success: true });
+        })
+        .catch((err) => {
+          if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack });
+        });
+    }
+  });
 };
 
 const checkSecretKey = (req, res) => {
@@ -59,7 +185,6 @@ const checkUsername = (req, res) => {
     }
   });
 };
-
 
 const userNameMatch = (req, res) => {
   if (req.session.username === null || req.session.username === undefined || req.session.username === '') {
@@ -106,29 +231,6 @@ const deleteUser = (req, res) => {
     .catch(err => {
       if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message });
     });
-
-  /*
-    let j = null;
-    for (let i = 0; i < userData.length; i++) {
-      if (req.session.username === userData[i].username) {
-        // console.log('user found', userData[i].username)
-        userData.splice(i, 1);
-        j = i;
-      }
-    }
-    // console.log('new data',userData)
-    res.status(STATUS_OK).json({ success: true });
-    
-    userData[j]
-      .save()
-      .then(() => {
-        // console.log('reached', product);
-        res.status(STATUS_OK).json({ success: true });
-      })
-      .catch(err => {
-        if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message });
-      });
-      */
 };
 
 const createAwsUser = () => {
@@ -367,7 +469,7 @@ const passwordHash = (req, res, next) => {
     bcrypt.hash(password, salt, (err, hashedData) => {
       if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message });
       req.body.password = hashedData;
-      // // console.log(hashedData)
+      console.log(hashedData);
       next();
     });
   });
@@ -391,5 +493,10 @@ module.exports = {
   passwordHash,
   changeUsername,
   changePassword,
-  checkPassword
+  checkPassword,
+  missingPw,
+  missingUsername,
+  sendPwEmail,
+  sendUsernameEmail,
+  checkMissingPWKey
 };

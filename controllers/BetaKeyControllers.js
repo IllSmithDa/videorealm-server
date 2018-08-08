@@ -77,13 +77,12 @@ const sendBetaKey = (req, res) => {
                 to: email,
                 from: process.env.SECRET_EMAIL,
                 subject: 'Videorealm Beta Key',
-                text: `Videorealm is Here!
-                `,
+                text: 'Videorealm is Here!',
                 html: `Congratulations! You have been selected to participate in the
-                Videorealm closed beta. This is your key to get in. 
+                Videorealm closed beta. This is your key to get in.
                 key: ${newKey}.
                 Use this key when creating your account to participate in the beta
-                at https://videorealm.herokuapp.com. 
+                at https://videorealm.herokuapp.com.
                 Thanks for your participation
                 -Videorealm
                 `,

@@ -52,10 +52,11 @@ const uploadProfileImage = (req, res) => {
 const deleteProfileImage = (req, res, next) => {
   // console.log(req.session.username);
   User.findOne({username: req.session.username}, (err, userdata) => {
+    if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message });
     const s3 = new AWS.S3();
     const myBucket = 'my.unique.bucket.userimages';
     const myKey = userdata.profilePictureID.split('/').pop();
-    console.log(myKey)
+    console.log(myKey);
 
     // console.log('id',userdata.profilePictureID);
     if (myKey === 'DefaultPic.jpg') {

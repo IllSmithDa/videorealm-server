@@ -15,6 +15,12 @@ const UserSchema = new mongoose.Schema({
     unique: true,
     required: true
   },
+  missingPW: {
+    type: String,
+  },
+  missingUsername: {
+    type: String,
+  },
   profilePictureID: {
     type: String,
     default: 'https://s3.amazonaws.com/my.unique.bucket.userimages/DefaultPic.jpg'

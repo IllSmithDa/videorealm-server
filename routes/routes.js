@@ -89,4 +89,14 @@ module.exports = (server) => {
     .post(AccountController.passwordHash, AccountController.changePassword);
   server.route('/checkPassword')
     .post(AccountController.checkPassword);
+  server.route('/sendPwEmail')
+    .post(AccountController.sendPwEmail);
+  server.route('/sendUsernameEmail')
+    .post(AccountController.sendUsernameEmail);
+  server.route('/missingUsername')
+    .post(AccountController.missingUsername);
+  server.route('/checkMissingPWKey')
+    .post(AccountController.checkMissingPWKey);
+  server.route('/missingPw')
+    .post(AccountController.passwordHash, AccountController.missingPw);
 };

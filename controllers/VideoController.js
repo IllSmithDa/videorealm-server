@@ -139,21 +139,28 @@ const deleteUserVideos = (req, res, next) => {
         videoData[0].videoList.splice(i, 1);
       }
     }
-    const videoList = { Objects: videoIDList };
-    // console.log((videoList.Objects));
-    if (videoList.Objects.length < 1) {
-      next();
-    } else {
-      let params = { Bucket: myBucket, Delete: videoList };
-      s3.deleteObjects(params, (err) => {
-        // console.log('afewf')
-        if (err) res.status(STATUS_SERVER_ERROR).json({error: err.message});
-        else {
+    videoData[0]
+      .save()
+      .then(() => {
+        const videoList = { Objects: videoIDList };
+        // console.log((videoList.Objects));
+        if (videoList.Objects.length < 1) {
           next();
+        } else {
+          let params = { Bucket: myBucket, Delete: videoList };
+          s3.deleteObjects(params, (err) => {
+            // console.log('afewf')
+            if (err) res.status(STATUS_SERVER_ERROR).json({error: err.message});
+            else {
+              next();
+            }
+            // res.json(STATUS_OK).json({ success: true })
+          });
         }
-        // res.json(STATUS_OK).json({ success: true })
+      })
+      .catch((err) => {
+        res.status(STATUS_SERVER_ERROR).json({error: err.message});
       });
-    }
   });
 };
 
