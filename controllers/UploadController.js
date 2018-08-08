@@ -54,7 +54,9 @@ const deleteProfileImage = (req, res, next) => {
   User.findOne({username: req.session.username}, (err, userdata) => {
     const s3 = new AWS.S3();
     const myBucket = 'my.unique.bucket.userimages';
-    const myKey = userdata.profilePictureID;
+    const myKey = userdata.profilePictureID.split('/').pop();
+    console.log(myKey)
+
     // console.log('id',userdata.profilePictureID);
     if (myKey === 'DefaultPic.jpg') {
       next();
