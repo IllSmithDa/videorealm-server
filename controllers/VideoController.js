@@ -19,18 +19,19 @@ const uploadVideo = (req, res) => {
     const s3 = new AWS.S3();
     const myBucket = 'my.unique.bucket.uservideos';
     const myKey = uniqueID();
-    // console.log('unique key', myKey);
+    // // console.log('unique key', myKey);
     let params = { Bucket: myBucket, Key: myKey, Body: req.files.videoFile.data};
     
     s3.putObject(params, () => {
       params = {Bucket: myBucket, Key: myKey};
       let signedurl = s3.getSignedUrl('getObject', params);
+      // // console.log('The URL is', url);
       // getting the date for video creation
       const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June',
         'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'
       ];
       const myDate = new Date();
-      const getYear = myDate.getFullYear().toString(); 
+      const getYear = myDate.getFullYear().toString();
       const getMonth = monthNames[myDate.getMonth()];
       const getDay = myDate.getDate().toString();
       const fullDate = `${getMonth} ${getDay}, ${getYear}`;
@@ -51,7 +52,11 @@ const uploadVideo = (req, res) => {
           .save()
           .then(() => {
             User.findOne({ username: req.session.username }, (err, userData) => {
+              console.log(userData);
               if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack});
+              if (userData === undefined) {
+                res.json({ error: 'user with that email does not exist'});
+              } 
               // console.log('reached phase 2');
               userData.videoList.push(video);
               userData
