@@ -40,7 +40,7 @@ module.exports = (server) => {
   server.route('/postVideoList')
     .post(VideoController.postVideoList);
   server.route('/getAllVideos')
-    .get(VideoController.getAllVideos);
+    .post(VideoController.getAllVideos);
   server.route('/searchVideos')
     .post(VideoController.videoSearch);
   server.route('/getFirstVideoName')
@@ -78,7 +78,7 @@ module.exports = (server) => {
   server.route('/sendEmail')
     .post(BetaKeyController.checkBetaEmail, BetaKeyController.sendEmail);
   server.route('/sendBetaKey')
-    .post(BetaKeyController.sendBetaKey);
+    .post(BetaKeyController.checkBetaEmail, BetaKeyController.sendBetaKey);
   server.route('/viewUpdate')
     .post(VideoController.viewUpdate);
   server.route('/createVideoDate')

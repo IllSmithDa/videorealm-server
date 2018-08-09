@@ -38,7 +38,7 @@ const uploadVideo = (req, res) => {
     Video.find({}, (err, videoData) => {
       if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack});
       // console.log('reached phase 1');
-      videoData[0].videoList.push(video);
+      videoData[0].videoList.unshift(video);
       videoData[0]
         .save()
         .then(() => {
@@ -49,7 +49,7 @@ const uploadVideo = (req, res) => {
               res.json({ error: 'user with that email does not exist'});
             } 
             // console.log('reached phase 2');
-            userData.videoList.push(video);
+            userData.videoList.unshift(video);
             userData
               .save()
               .then(() => {
@@ -103,14 +103,32 @@ const postVideoList = (req, res) => {
 };
 
 const getAllVideos = (req, res) => {
+  const maxVideos = 50;
+  const { index } = req.body;
+  let { reachedEnd } = req.body;
+  const videoArr = [];
   Video.find({}, (err, videos) => {
-    // // console.log(videos[0].videoList);
     if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message});
-    res.status(STATUS_OK).json(videos[0].videoList);
+    console.log(videos[0].videoList);
+    for (let i = index; i < videos[0].videoList.length; i++) {
+      videoArr.push(videos[0].videoList[i]);
+      if (i === videos[0].videoList.length - 1 || i === maxVideos) {
+        reachedEnd = true;
+        break;
+      }
+      if (index === 0 && i === 9) {
+        break;
+      }
+      if (index !== 0 && i === index + 4) {
+        break;
+      }
+    }
+    res.status(STATUS_OK).json({videoArr , reachedEnd});
   });
 };
 
 const getFirstVideoName = (req, res) => {
+  const { index } = req.body;
   Video.find({}, (err, videoData) => {
     if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message});
     // console.log(videoData[0].videoList[0].videoName)
@@ -178,7 +196,8 @@ const getVideoByID = (req, res) => {
 };
 
 const videoSearch = (req, res) => {
-  let {searchTerm} = req.body;
+  const { index } = req.body;
+  let {searchTerm, reachedEnd } = req.body;
   searchTerm = searchTerm.replace(/%20/g, ' ');
   // console.log(searchTerm)
   const patt = new RegExp(searchTerm.toUpperCase());
@@ -186,13 +205,26 @@ const videoSearch = (req, res) => {
 
   Video.find({}, (err, videos) => {
     if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message });
-
-    for (let i = 0; i < videos[0].videoList.length; i++) {
+    const maxVideos = 50;
+    // console.log('length',videos[0].videoList.length);
+    let i = index;
+    for (i; i < videos[0].videoList.length; i++) {
+      // console.log('data', videos[0].videoList[i])
       if (patt.test(videos[0].videoList[i].videoName.toUpperCase())) {
         searchResults.push(videos[0].videoList[i]);
       }
+      if (i === videos[0].videoList.length - 1 || i === maxVideos) {
+        reachedEnd = true;
+        break;
+      }
+      if (index === 0 && searchResults.length === 10) {
+        break;
+      }
+      if (index !== 0 && searchResults.length === 5) {
+        break;
+      }
     }
-    res.status(STATUS_OK).json(searchResults);
+    res.status(STATUS_OK).json({reachedEnd, searchResults, index: i});
   });
 };
 
@@ -221,6 +253,7 @@ const addComment = (req, res) => {
             if (videoID === userData.videoList[j].videoID) {
               const commentIndex = userData.videoList[j].comments.length;
               userData.videoList[j].comments.push({ comment, username: commentUsername, commentIndex });
+              index = j;
             }
           }
           userData
@@ -228,8 +261,8 @@ const addComment = (req, res) => {
             .then((data) => {
               // return data back to the client side
               // // console.log('data here', index);
-              // // console.log(userData.videoList[0].comments)
-              res.json(data.videoList[index].comments);
+              // console.log(data.videoList[0].comments)
+              res.status(STATUS_OK).json(data.videoList[index].comments);
             })
             .catch((err) => {
               res.status(STATUS_USER_ERROR).json({ error: err.message });
