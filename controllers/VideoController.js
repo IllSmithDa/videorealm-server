@@ -9,74 +9,64 @@ const STATUS_SERVER_ERROR = 500;
 
 const uploadVideo = (req, res) => {
   if (!req.files) return res.status(400).send('No files were uploaded.');
-  if (!(/.mp4/).test(req.files.videoFile.name) && !(/.mov/).test(req.files.videoFile.name) &&
-  !(/.wmv/).test(req.files.videoFile.name) &&  !(/.avi/).test(req.files.videoFile.name) &&
-  !(/.flv/).test(req.files.videoFile.name)) {
-    // console.log('over here')
-    res.writeHead(301, {Location: `${requrl.reqURL}/account`});
-    res.end();
-  } else {
-    const s3 = new AWS.S3();
-    const myBucket = 'my.unique.bucket.uservideos';
-    const myKey = uniqueID();
-    // // console.log('unique key', myKey);
-    let params = { Bucket: myBucket, Key: myKey, Body: req.files.videoFile.data};
-    
-    s3.putObject(params, () => {
-      params = {Bucket: myBucket, Key: myKey};
-      let signedurl = s3.getSignedUrl('getObject', params);
-      // // console.log('The URL is', url);
-      // getting the date for video creation
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June',
-        'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'
-      ];
-      const myDate = new Date();
-      const getYear = myDate.getFullYear().toString();
-      const getMonth = monthNames[myDate.getMonth()];
-      const getDay = myDate.getDate().toString();
-      const fullDate = `${getMonth} ${getDay}, ${getYear}`;
-      let url = signedurl.split(/\?/)[0];
-
-      const video = {
-        userName: req.session.username,
-        videoID: myKey, videoURL: url, 
-        videoName: req.body.videoName,
-        videoDate: fullDate,
-      };
-
-      Video.find({}, (err, videoData) => {
-        if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack});
-        // console.log('reached phase 1');
-        videoData[0].videoList.push(video);
-        videoData[0]
-          .save()
-          .then(() => {
-            User.findOne({ username: req.session.username }, (err, userData) => {
-              console.log(userData);
-              if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack});
-              if (userData === undefined) {
-                res.json({ error: 'user with that email does not exist'});
-              } 
-              // console.log('reached phase 2');
-              userData.videoList.push(video);
-              userData
-                .save()
-                .then(() => {
-                  // console.log('reaced phase 3');
-                  res.writeHead(301, {Location: `${requrl.reqURL}/account`});
-                  res.end();
-                })
-                .catch((err) => {
-                  res.status(STATUS_SERVER_ERROR).json({ error: err.message});
-                });
-            });
-          })
-          .catch((err) => {
-            res.status(STATUS_SERVER_ERROR).json({ error: err.message});
+  const s3 = new AWS.S3();
+  const myBucket = 'my.unique.bucket.uservideos';
+  const myKey = uniqueID();
+  // // console.log('unique key', myKey);
+  let params = { Bucket: myBucket, Key: myKey, Body: req.files.videoFile.data};
+  
+  s3.putObject(params, () => {
+    params = {Bucket: myBucket, Key: myKey};
+    let signedurl = s3.getSignedUrl('getObject', params);
+    // // console.log('The URL is', url);
+    // getting the date for video creation
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June',
+      'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'
+    ];
+    const myDate = new Date();
+    const getYear = myDate.getFullYear().toString();
+    const getMonth = monthNames[myDate.getMonth()];
+    const getDay = myDate.getDate().toString();
+    const fullDate = `${getMonth} ${getDay}, ${getYear}`;
+    let url = signedurl.split(/\?/)[0];
+    const video = {
+      userName: req.session.username,
+      videoID: myKey, videoURL: url, 
+      videoName: req.body.videoName,
+      videoDate: fullDate,
+    };
+    Video.find({}, (err, videoData) => {
+      if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack});
+      // console.log('reached phase 1');
+      videoData[0].videoList.push(video);
+      videoData[0]
+        .save()
+        .then(() => {
+          User.findOne({ username: req.session.username }, (err, userData) => {
+            console.log(userData);
+            if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack});
+            if (userData === undefined) {
+              res.json({ error: 'user with that email does not exist'});
+            } 
+            // console.log('reached phase 2');
+            userData.videoList.push(video);
+            userData
+              .save()
+              .then(() => {
+                // console.log('reaced phase 3');
+                res.writeHead(301, {Location: `${requrl.reqURL}/account`});
+                res.end();
+              })
+              .catch((err) => {
+                res.status(STATUS_SERVER_ERROR).json({ error: err.message});
+              });
           });
-      });            
-    });
-  }
+        })
+        .catch((err) => {
+          res.status(STATUS_SERVER_ERROR).json({ error: err.message});
+        });
+    });            
+  });
 };
 
 const countNumVideos = (req, res, next) => {
