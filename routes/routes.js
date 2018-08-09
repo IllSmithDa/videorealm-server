@@ -76,7 +76,7 @@ module.exports = (server) => {
   server.route('/getUnsentKeys')
     .get(BetaKeyController.getUnsentKeys);
   server.route('/sendEmail')
-    .get(BetaKeyController.sendEmail);
+    .post(BetaKeyController.checkBetaEmail, BetaKeyController.sendEmail);
   server.route('/sendBetaKey')
     .post(BetaKeyController.sendBetaKey);
   server.route('/viewUpdate')

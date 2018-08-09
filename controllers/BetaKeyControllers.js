@@ -57,6 +57,24 @@ const requestBetaKey = (req, res) => {
   })
 }
 */
+
+const checkBetaEmail = (req, res, next) => {
+  const { email } = req.body;
+  BetaKey.find({}, (err, betaArr) => {
+    if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack });
+    console.log(betaArr);
+    for (let i = 0; i< betaArr[0].betaKey.length; i++) {
+      if (email === betaArr[0].betaKey[i].email) {
+        res.json({ error: 'email already sent beta key'});
+        break;
+      }
+      if (i === betaArr[0].betaKey.length - 1) {
+        next();
+      }
+    }
+  });
+};
+
 const sendBetaKey = (req, res) => {
   const email = req.body.email;
   if(validator.validate(email)) {
@@ -105,7 +123,7 @@ const sendBetaKey = (req, res) => {
 };
 
 // test code for sending beta codes
-const sendEmail = (req) => {
+const sendEmail = (req, res) => {
   const email = req.body.email;
   // Just some boiler plate. Not to be used
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -114,9 +132,10 @@ const sendEmail = (req) => {
     from: email,
     subject: 'Please send me a Beta Key',
     text: `Please send a beta key to ${email}`,
-    html: '<strong>and easy to do anywhere, even with Node.js</strong>',
+    html: `Please send a beta key to ${email}`,
   };
   sgMail.send(msg);
+  res.status(STATUS_OK).json({ success: true });
 };
 
 const addNewKey = (req, res) => {
@@ -196,5 +215,6 @@ module.exports = {
   deleteKey,
   getUnsentKeys,
   sendEmail,
-  sendBetaKey
+  sendBetaKey,
+  checkBetaEmail
 };
