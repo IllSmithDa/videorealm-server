@@ -64,7 +64,7 @@ module.exports = (server) => {
   server.route('/deleteUser')
     .get(AccountController.deleteUser);
   server.route('/deleteUserFinal')
-    .get(VideoController.deleteUserVideos, UploadController.deleteProfileImage, AccountController.deleteUser);
+    .get(UploadController.deleteProfileImage, AccountController.deleteUser);
   server.route('/addNewKey')
     .get(BetaKeyController.addNewKey);
   server.route('/createBetaTable')
