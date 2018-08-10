@@ -109,20 +109,44 @@ const getAllVideos = (req, res) => {
   const videoArr = [];
   Video.find({}, (err, videos) => {
     if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message});
-    console.log(videos[0].videoList);
+    // console.log(videos[0].videoList);
     for (let i = index; i < videos[0].videoList.length; i++) {
       videoArr.push(videos[0].videoList[i]);
       if (i === videos[0].videoList.length - 1 || i === maxVideos) {
         reachedEnd = true;
         break;
       }
-      if (index === 0 && i === 9) {
-        break;
-      }
-      if (index !== 0 && i === index + 4) {
+
+      if (i === index + 4) {
         break;
       }
     }
+    res.status(STATUS_OK).json({videoArr , reachedEnd});
+  });
+};
+
+const getPopularVideos = (req, res) => {
+  const maxVideos = 50;
+  const { index } = req.body;
+  let { reachedEnd } = req.body;
+  let videoArr = [];
+  Video.find({}, (err, videos) => {
+    videos[0].videoList.sort((a, b) => {
+      return b.views - a.views;
+    });
+    if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message});
+    // console.log(videos[0].videoList);
+    for (let i = index; i < videos[0].videoList.length; i++) {
+      videoArr.push(videos[0].videoList[i]);
+      if (i === videos[0].videoList.length - 1 || i === maxVideos) {
+        reachedEnd = true;
+        break;
+      }
+      if (i === index + 4) {
+        break;
+      }
+    }
+    console.log(videoArr);
     res.status(STATUS_OK).json({videoArr , reachedEnd});
   });
 };
@@ -509,5 +533,6 @@ module.exports = {
   viewUpdate,
   createVideoDate,
   getCommentList,
-  getReplyList
+  getReplyList,
+  getPopularVideos
 };

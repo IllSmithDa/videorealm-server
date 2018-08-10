@@ -103,4 +103,6 @@ module.exports = (server) => {
     .post(VideoController.getCommentList);
   server.route('/getReplyList')
     .post(VideoController.getReplyList);
+  server.route('/getPopularVideos')
+    .post(VideoController.getPopularVideos);
 };
