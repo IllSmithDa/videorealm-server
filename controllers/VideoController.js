@@ -291,7 +291,7 @@ const getReplyList = (req, res) => {
 const videoSearch = (req, res) => {
   const { index } = req.body;
   let {searchTerm, reachedEnd } = req.body;
-  searchTerm = searchTerm.replace(/%20/g, ' ');
+
   // console.log(searchTerm)
   const patt = new RegExp(searchTerm.toUpperCase());
   const searchResults = [];
