@@ -99,4 +99,8 @@ module.exports = (server) => {
     .post(AccountController.checkMissingPWKey);
   server.route('/missingPw')
     .post(AccountController.passwordHash, AccountController.missingPw);
+  server.route('/getCommentList')
+    .post(VideoController.getCommentList);
+  server.route('/getReplyList')
+    .post(VideoController.getReplyList);
 };

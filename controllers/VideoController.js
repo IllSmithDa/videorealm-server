@@ -127,6 +127,7 @@ const getAllVideos = (req, res) => {
   });
 };
 
+
 const getFirstVideoName = (req, res) => {
   const { index } = req.body;
   Video.find({}, (err, videoData) => {
@@ -195,6 +196,74 @@ const getVideoByID = (req, res) => {
   });
 };
 
+const getCommentList = (req, res) => {
+  const { index, videoID } = req.body;
+  let { reachedEnd } = req.body;
+  const commentArr = [];
+  Video.find({}, (err, videoData) => {
+    if (err) res.state(STATUS_USER_ERROR).json(err);
+
+    // console.log(videoData[0].videoList);  
+    for (let i = 0; i < videoData[0].videoList.length; i++) {
+      if (videoID === videoData[0].videoList[i].videoID) {
+        // console.log('match found');
+        // console.log(videoData[0].videoList[i].comments)
+        for (let j = 0; j < videoData[0].videoList[i].comments.length; j++) {
+          commentArr.push(videoData[0].videoList[i].comments[j]);
+          if (i === videoData[0].videoList[i].comments.length - 1) {
+            reachedEnd = true;
+            break;
+          }
+          if (j === index + 4) {
+            break;
+          }
+        }
+        res.status(STATUS_OK).json({reachedEnd, commentArr});
+        break;
+      }
+      if (i === videoData[0].videoList.length - 1) {
+        res.json({ error: 'video does not exist' });
+      }
+    }
+  });
+};
+
+const getReplyList = (req, res) => {
+  const { index, videoID, commentIndex } = req.body;
+  let { reachedEnd } = req.body;
+  const repliesArr = [];
+  Video.find({}, (err, videoData) => {
+    if (err) res.state(STATUS_USER_ERROR).json(err);
+
+    // console.log(videoData[0].videoList);  
+    for (let i = 0; i < videoData[0].videoList.length; i++) {
+      if (videoID === videoData[0].videoList[i].videoID) {
+        for (let j = 0; j < videoData[0].videoList[i].comments.length; j++) {
+          if (commentIndex === videoData[0].videoList[i].comments[j].commentIndex) {
+            for (let k = 0; k < videoData[0].videoList[i].comments[j].replies.length; k++) {
+              repliesArr.push(videoData[0].videoList[i].comments[j].replies[k]);
+              if (k === videoData[0].videoList[i].comments[j].replies.length - 1) {
+                reachedEnd = true;
+                break;
+              }
+              if (k === index + 4) {
+                break;
+              }
+            }
+          }
+        }
+        console.log(repliesArr);
+        res.status(STATUS_OK).json({reachedEnd, repliesArr});
+        break;
+      }
+      if (i === videoData[0].videoList.length - 1) {
+        res.json({ error: 'video does not exist' });
+      }
+    }
+  });
+};
+
+
 const videoSearch = (req, res) => {
   const { index } = req.body;
   let {searchTerm, reachedEnd } = req.body;
@@ -232,7 +301,7 @@ const addComment = (req, res) => {
   const commentUsername = req.session.username;
   // // console.log(commentUsername);
   // // console.log(req.body);
-  const { comment, videoID, videoUploader } = req.body;
+  const { comment, videoID, videoUploader, index } = req.body;
 
   Video.find({}, (err, videoData) => {
     if (err) res.state(STATUS_USER_ERROR).json({ error: err.message});
@@ -247,6 +316,7 @@ const addComment = (req, res) => {
       .save()
       .then(() => {
         User.findOne({username: videoUploader}, (err, userData) => {
+          console.log(userData);
           if (err) res.state(STATUS_USER_ERROR).json({ error: err.message});
           let index = 0;
           for(let j = 0; j < userData.videoList.length; j++) {
@@ -437,5 +507,7 @@ module.exports = {
   countNumVideos,
   videoSearch,
   viewUpdate,
-  createVideoDate
+  createVideoDate,
+  getCommentList,
+  getReplyList
 };
