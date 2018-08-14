@@ -1,5 +1,6 @@
 const AWS = require('aws-sdk');
 const uniqueID = require('uniqid');
+const tmp = require('tmp');
 const Video = require('../models/VideoModel');
 const User = require('../models/UserModel');
 const requrl = require('../reqURL');
@@ -66,6 +67,21 @@ const uploadVideo = (req, res) => {
           res.status(STATUS_SERVER_ERROR).json({ error: err.message});
         });
     });            
+  });
+};
+
+const createScreenshot = (req, res) => {
+  if (!req.files) return res.status(400).send('No files were uploaded.');
+  const videoFile = req.files.videoFile.data;
+  console.log(videoFile);
+  tmp.file(function  _tempDirCreated(err, path, cleanupCallback) {
+    if (err) throw err;
+ 
+    console.log('Dir: ', path);
+    
+    // Manual cleanup
+    cleanupCallback();
+
   });
 };
 
@@ -534,5 +550,6 @@ module.exports = {
   createVideoDate,
   getCommentList,
   getReplyList,
-  getPopularVideos
+  getPopularVideos,
+  createScreenshot
 };
