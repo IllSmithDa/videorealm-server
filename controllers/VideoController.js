@@ -71,14 +71,14 @@ const uploadVideo = (req, res) => {
 };
 
 const createScreenshot = (req, res) => {
-  if (!req.files) return res.status(400).send('No files were uploaded.');
-  const videoFile = req.files.videoFile.data;
-  console.log(videoFile);
+  ///if (!req.files) return res.status(400).send('No files were uploaded.');
+  //const videoFile = req.files.videoFile.data;
+ // console.log(videoFile);
   tmp.file(function  _tempDirCreated(err, path, cleanupCallback) {
     if (err) throw err;
  
     console.log('Dir: ', path);
-    
+    res.json(path);
     // Manual cleanup
     cleanupCallback();
 
