@@ -1,4 +1,5 @@
 const AWS = require('aws-sdk');
+const ffmpeg = require('fluent-ffmpeg');
 const uniqueID = require('uniqid');
 const tmp = require('tmp');
 const Video = require('../models/VideoModel');
@@ -70,17 +71,39 @@ const uploadVideo = (req, res) => {
   });
 };
 
-const createScreenshot = (req, res) => {
+const createScreenshot = (req, res, next) => {
   ///if (!req.files) return res.status(400).send('No files were uploaded.');
-  //const videoFile = req.files.videoFile.data;
- // console.log(videoFile);
-  tmp.file(function  _tempDirCreated(err, path, cleanupCallback) {
+  const videoFile = req.files.videoFile;
+  // console.log(videoFile);
+  const newFileName = uniqueID();
+  videoFile.mv()
+  tmp.file(function _tempDirCreated(err, path, cleanupCallback) {
     if (err) throw err;
- 
-    console.log('Dir: ', path);
-    res.json(path);
-    // Manual cleanup
-    cleanupCallback();
+    videoFile.mv(`/tmp/${newFileName}.jpg`, () => {
+      ffmpeg(`/tmp/${newFileName}.jpg`)
+        .on('end',() => {
+          const s3 = new AWS.S3();
+          const myBucket = 'my.unique.bucket.uservideos';
+          const myKey = newFileName;
+          let params = { Bucket: myBucket, Key: myKey, Body: newFileName};
+          s3.putObject(params, () => {
+            res.json({ success: true });
+          });
+          console.log('Dir: ', path);
+          res.json(path);
+          // Manual cleanup
+          cleanupCallback();
+        })
+        .on('error', function(err) {
+          console.error(err);
+        })
+        .screenshots({
+          // Will take screenshots at 20%, 40%, 60% and 80% of the video
+          count: 1,
+          folder: `/tmp/${newFileName}.jpg`,
+          size: '225x150'
+        });
+    });
 
   });
 };
