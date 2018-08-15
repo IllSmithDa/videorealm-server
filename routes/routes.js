@@ -107,4 +107,7 @@ module.exports = (server) => {
     .post(VideoController.getPopularVideos);
   server.route('/createScreenshot')
     .post(VideoController.createScreenshot);
+  server.route('/uploadNewVideo')
+    .post(VideoController.countNumVideos, VideoController.createScreenshot, VideoController.uploadVideo);
+  
 };

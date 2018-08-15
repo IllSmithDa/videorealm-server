@@ -1,6 +1,9 @@
 const AWS = require('aws-sdk');
 const ffmpeg = require('fluent-ffmpeg');
+const ffmpegPath = require('ffmpeg-static').path;
+const ffprobe = require('@ffprobe-installer/ffprobe').path;
 const uniqueID = require('uniqid');
+const fs = require('fs');
 const tmp = require('tmp');
 const Video = require('../models/VideoModel');
 const User = require('../models/UserModel');
@@ -9,7 +12,12 @@ const STATUS_OK = 200;
 const STATUS_USER_ERROR = 422;
 const STATUS_SERVER_ERROR = 500;
 
+ffmpeg.setFfmpegPath(ffmpegPath);
+ffmpeg.setFfprobePath(ffprobe);
+
 const uploadVideo = (req, res) => {
+  console.log(req.body.videoThumbnailID);
+  const { videoThumbnailID } = req.body;
   if (!req.files) return res.status(400).send('No files were uploaded.');
   const s3 = new AWS.S3();
   const myBucket = 'my.unique.bucket.uservideos';
@@ -36,6 +44,7 @@ const uploadVideo = (req, res) => {
       videoID: myKey, videoURL: url, 
       videoName: req.body.videoName,
       videoDate: fullDate,
+      videoThumbnailID
     };
     Video.find({}, (err, videoData) => {
       if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack});
@@ -76,35 +85,39 @@ const createScreenshot = (req, res, next) => {
   const videoFile = req.files.videoFile;
   // console.log(videoFile);
   const newFileName = uniqueID();
-  videoFile.mv()
-  tmp.file(function _tempDirCreated(err, path, cleanupCallback) {
-    if (err) throw err;
-    videoFile.mv(`/tmp/${newFileName}.jpg`, () => {
-      ffmpeg(`/tmp/${newFileName}.jpg`)
-        .on('end',() => {
+
+  tmp.dir(function _tempDirCreated(err, path, cleanupCallback) {
+    if (err) res.status(STATUS_USER_ERROR).json({ error: err.message});
+    console.log(`${path}\\${newFileName}.mp4s`);
+    videoFile.mv(`${path}\\${newFileName}.mp4`, () => {
+      ffmpeg(`${path}\\${newFileName}.mp4`)
+        .on('filenames', function(filenames) {
+          console.log('Will generate ' + filenames.join(', '));
+        })
+        .on('end', function() {
           const s3 = new AWS.S3();
           const myBucket = 'my.unique.bucket.uservideos';
-          const myKey = newFileName;
-          let params = { Bucket: myBucket, Key: myKey, Body: newFileName};
-          s3.putObject(params, () => {
-            res.json({ success: true });
+          const myKey = `${newFileName}.jpg`;
+
+          const file = fs.createReadStream(`${path}\\${newFileName}.jpg`);
+          const params = { Bucket: myBucket, Key: myKey, Body: file};
+          console.log(`${path}\\${newFileName}.jpg`);          
+          s3.upload(params, {}, (err) => {
+            if (err) res.status(STATUS_USER_ERROR).json({ error: err.message});
+            req.body.videoThumbnailID = myKey;
+            console.log('reached');
+            //  cleanupCallback();
+            next();
           });
-          console.log('Dir: ', path);
-          res.json(path);
-          // Manual cleanup
-          cleanupCallback();
-        })
-        .on('error', function(err) {
-          console.error(err);
         })
         .screenshots({
-          // Will take screenshots at 20%, 40%, 60% and 80% of the video
+          // Will take screens at 20%, 40%, 60% and 80% of the video
           count: 1,
-          folder: `/tmp/${newFileName}.jpg`,
-          size: '225x150'
+          folder: `${path}`,
+          filename: `${newFileName}.jpg`,
+          size: '225x150',
         });
     });
-
   });
 };
 

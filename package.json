@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/IllSmithDa/socialclubapi-NodeMysql#readme",
   "dependencies": {
+    "@ffprobe-installer/ffprobe": "^1.0.9",
     "@sendgrid/mail": "^6.3.1",
     "aws-sdk": "^2.270.1",
     "bcrypt": "^3.0.0",
@@ -33,7 +34,8 @@
     "express": "^4.16.3",
     "express-fileupload": "^0.4.0",
     "express-session": "^1.15.6",
-    "ffprobe": "^1.1.0",
+    "ffmpeg": "0.0.4",
+    "ffmpeg-static": "^2.3.0",
     "fluent-ffmpeg": "^2.1.2",
     "knex": "^0.14.6",
     "mongoose": "^5.2.3",
