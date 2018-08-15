@@ -12,7 +12,7 @@ const STATUS_OK = 200;
 const STATUS_USER_ERROR = 422;
 const STATUS_SERVER_ERROR = 500;
 
-ffmpeg.setFfmpegPath(ffmpegPath);
+ffmpeg.setFfmpegPath('/app/node_modules/@ffprobe-installer/win32-x64/ffprobe');
 ffmpeg.setFfprobePath(ffprobe);
 
 const uploadVideo = (req, res) => {
