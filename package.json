@@ -37,6 +37,7 @@
     "ffmpeg": "0.0.4",
     "ffmpeg-static": "^2.3.0",
     "fluent-ffmpeg": "^2.1.2",
+    "fs-extra": "^7.0.0",
     "knex": "^0.14.6",
     "mongoose": "^5.2.3",
     "mysql": "^2.15.0",

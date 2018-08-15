@@ -3,7 +3,7 @@ const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('ffmpeg-static').path;
 const ffprobe = require('@ffprobe-installer/ffprobe').path;
 const uniqueID = require('uniqid');
-const fs = require('fs');
+const fs = require('fs-extra');
 const tmp = require('tmp');
 const Video = require('../models/VideoModel');
 const User = require('../models/UserModel');
@@ -17,7 +17,7 @@ ffmpeg.setFfprobePath(ffprobe);
 
 const uploadVideo = (req, res) => {
   console.log(req.body.videoThumbnailID);
-  const { videoThumbnailID } = req.body;
+  const { videoThumbnailID, videoThumbURL } = req.body;
   if (!req.files) return res.status(400).send('No files were uploaded.');
   const s3 = new AWS.S3();
   const myBucket = 'my.unique.bucket.uservideos';
@@ -44,7 +44,8 @@ const uploadVideo = (req, res) => {
       videoID: myKey, videoURL: url, 
       videoName: req.body.videoName,
       videoDate: fullDate,
-      videoThumbnailID
+      videoThumbnailID,
+      videoThumbURL,
     };
     Video.find({}, (err, videoData) => {
       if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.stack});
@@ -100,14 +101,20 @@ const createScreenshot = (req, res, next) => {
           const myKey = `${newFileName}.jpg`;
 
           const file = fs.createReadStream(`${path}\\${newFileName}.jpg`);
-          const params = { Bucket: myBucket, Key: myKey, Body: file};
+          let params = { Bucket: myBucket, Key: myKey, Body: file};
           console.log(`${path}\\${newFileName}.jpg`);          
           s3.upload(params, {}, (err) => {
             if (err) res.status(STATUS_USER_ERROR).json({ error: err.message});
+            params = {Bucket: myBucket, Key: myKey};
+            let signedurl = s3.getSignedUrl('getObject', params);
+            let url = signedurl.split(/\?/)[0];
             req.body.videoThumbnailID = myKey;
+            req.body.videoThumbURL = url;
+            
             console.log('reached');
-            //  cleanupCallback();
-            next();
+            fs.remove(`${path}`, () => {
+              next();
+            });
           });
         })
         .screenshots({
@@ -115,11 +122,53 @@ const createScreenshot = (req, res, next) => {
           count: 1,
           folder: `${path}`,
           filename: `${newFileName}.jpg`,
-          size: '225x150',
+          size: '500x275',
         });
     });
   });
 };
+
+const screenShotTest = (req, res) => {
+  ///if (!req.files) return res.status(400).send('No files were uploaded.');
+  const videoFile = req.files.videoFile;
+  // console.log(videoFile);
+  const newFileName = 'j5a7hh7gjkunw2y7';
+
+  tmp.dir(function _tempDirCreated(err, path, cleanupCallback) {
+    if (err) res.status(STATUS_USER_ERROR).json({ error: err.message});
+    console.log(`${path}\\${newFileName}.mp4s`);
+    videoFile.mv(`${path}\\${newFileName}.mp4`, () => {
+      ffmpeg(`${path}\\${newFileName}.mp4`)
+        .on('filenames', function(filenames) {
+          console.log('Will generate ' + filenames.join(', '));
+        })
+        .on('end', function() {
+          const s3 = new AWS.S3();
+          const myBucket = 'my.unique.bucket.uservideos';
+          const myKey = `${newFileName}.jpg`;
+
+          const file = fs.createReadStream(`${path}\\${newFileName}.jpg`);
+          let params = { Bucket: myBucket, Key: myKey, Body: file};
+          console.log(`${path}\\${newFileName}.jpg`);          
+          s3.upload(params, {}, (err) => {
+            if (err) res.status(STATUS_USER_ERROR).json({ error: err.message});
+            console.log('reached');
+            fs.remove(`${path}`, () => {
+              res.json({ success: true });
+            });
+          });
+        })
+        .screenshots({
+          // Will take screens at 20%, 40%, 60% and 80% of the video
+          count: 1,
+          folder: `${path}`,
+          filename: `${newFileName}.jpg`,
+          size: '500x275',
+        });
+    });
+  });
+};
+
 
 const countNumVideos = (req, res, next) => {
   User.find({username: req.session.username}, (err, userData) => {
@@ -223,7 +272,7 @@ const deleteUserVideos = (req, res, next) => {
 
     // console.log(videoData);
     for (let i = 0; i < videoData[0].videoList.length; i++) {
-      if (req.session.usernam === videoData[0].videoList[i].userName) {
+      if (req.session.username === videoData[0].videoList[i].userName) {
         videoIDList.push(videoData[0].videoList[i].videoID);
         videoData[0].videoList.splice(i, 1);
       }
@@ -469,6 +518,7 @@ const deleteVideos = (req, res) => {
   const s3 = new AWS.S3();
   const myBucket = 'my.unique.bucket.uservideos';
   const videoList = { Objects: req.body.videoIDList };
+  const thumbnailList = [];
   let params = { Bucket: myBucket, Delete: videoList };
   s3.deleteObjects(params, (err) => {
     if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message });
@@ -492,6 +542,7 @@ const deleteVideos = (req, res) => {
             for (let k = 0; k < videoListArr.length; k++) {
               for (let t = 0; t < vidData[0].videoList.length; t++) {
                 if (videoListArr[k].Key === vidData[0].videoList[t].videoID) {
+                  thumbnailList.push(vidData[0].videoList[t].videoThumbnailID);
                   // // console.log('one video', vidData[0].videoList[t].videoID);
                   // // console.log('one video', videoListArr[k].Key);
                   vidData[0].videoList.splice(t, 1);
@@ -502,7 +553,14 @@ const deleteVideos = (req, res) => {
             vidData[0]
               .save()
               .then(() => {
-                res.status(STATUS_OK).json({ sucess: true });
+                console.log('list', thumbnailList);
+                const thumbList = { Objects: thumbnailList };
+                console.log(thumbList);
+                params = { Bucket: myBucket, Delete: thumbList };
+                s3.deleteObjects(params, (err) => {
+                  if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message });
+                  res.status(STATUS_OK).json({ sucess: true });
+                });
               })
               .catch((err) => {
                 res.status(STATUS_SERVER_ERROR).json({ error: err.message });
@@ -587,5 +645,6 @@ module.exports = {
   getCommentList,
   getReplyList,
   getPopularVideos,
-  createScreenshot
+  createScreenshot,
+  screenShotTest
 };
