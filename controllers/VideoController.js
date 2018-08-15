@@ -17,11 +17,11 @@ ffmpeg.setFfprobePath(ffprobe);
 
 const uploadVideo = (req, res) => {
   console.log(req.body.videoThumbnailID);
-  const { videoThumbnailID, videoThumbURL } = req.body;
+  const { videoThumbnailID, videoThumbURL, videoID } = req.body;
   if (!req.files) return res.status(400).send('No files were uploaded.');
   const s3 = new AWS.S3();
   const myBucket = 'my.unique.bucket.uservideos';
-  const myKey = uniqueID();
+  const myKey = videoID;
   // // console.log('unique key', myKey);
   let params = { Bucket: myBucket, Key: myKey, Body: req.files.videoFile.data};
   
@@ -41,7 +41,8 @@ const uploadVideo = (req, res) => {
     let url = signedurl.split(/\?/)[0];
     const video = {
       userName: req.session.username,
-      videoID: myKey, videoURL: url, 
+      videoID: myKey,
+      videoURL: url, 
       videoName: req.body.videoName,
       videoDate: fullDate,
       videoThumbnailID,
@@ -99,19 +100,17 @@ const createScreenshot = (req, res, next) => {
           const s3 = new AWS.S3();
           const myBucket = 'my.unique.bucket.uservideos';
           const myKey = `${newFileName}.jpg`;
-
           const file = fs.createReadStream(`${path}\\${newFileName}.jpg`);
           let params = { Bucket: myBucket, Key: myKey, Body: file};
-          console.log(`${path}\\${newFileName}.jpg`);          
+
           s3.upload(params, {}, (err) => {
             if (err) res.status(STATUS_USER_ERROR).json({ error: err.message});
             params = {Bucket: myBucket, Key: myKey};
             let signedurl = s3.getSignedUrl('getObject', params);
             let url = signedurl.split(/\?/)[0];
+            req.body.videoID = newFileName;
             req.body.videoThumbnailID = myKey;
             req.body.videoThumbURL = url;
-            
-            console.log('reached');
             fs.remove(`${path}`, () => {
               next();
             });
@@ -132,7 +131,7 @@ const screenShotTest = (req, res) => {
   ///if (!req.files) return res.status(400).send('No files were uploaded.');
   const videoFile = req.files.videoFile;
   // console.log(videoFile);
-  const newFileName = 'j5a7hh7gjkunw2y7';
+  const newFileName = 'j5a7h5nsjkn0urmh';
 
   tmp.dir(function _tempDirCreated(err, path, cleanupCallback) {
     if (err) res.status(STATUS_USER_ERROR).json({ error: err.message});
@@ -149,7 +148,7 @@ const screenShotTest = (req, res) => {
 
           const file = fs.createReadStream(`${path}\\${newFileName}.jpg`);
           let params = { Bucket: myBucket, Key: myKey, Body: file};
-          console.log(`${path}\\${newFileName}.jpg`);          
+          console.log(`${path}\\${newFileName}.jpg`);
           s3.upload(params, {}, (err) => {
             if (err) res.status(STATUS_USER_ERROR).json({ error: err.message});
             console.log('reached');
@@ -553,14 +552,7 @@ const deleteVideos = (req, res) => {
             vidData[0]
               .save()
               .then(() => {
-                console.log('list', thumbnailList);
-                const thumbList = { Objects: thumbnailList };
-                console.log(thumbList);
-                params = { Bucket: myBucket, Delete: thumbList };
-                s3.deleteObjects(params, (err) => {
-                  if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message });
-                  res.status(STATUS_OK).json({ sucess: true });
-                });
+                res.status(STATUS_OK).json({ sucess: true });
               })
               .catch((err) => {
                 res.status(STATUS_SERVER_ERROR).json({ error: err.message });
