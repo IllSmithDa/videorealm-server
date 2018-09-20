@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const fileUpload = require('express-fileupload');
 const favicon = require('serve-favicon');
 const path = require('path');
+const request = require('request');
 const fs = require('fs');
 const knex = require('knex');
 const mysql = require('mysql');
@@ -73,3 +74,11 @@ mongoose
   .catch(function(err) {
     console.log('DB connection failed..', err.message);
   });
+
+// prevents heroku from setting wbesite to sleep due to inactivity
+setInterval(() => {
+  request(process.env.BACKEND_URL,(err) => {
+    if (err) console.log(err);
+    console.log('sucessfully reached website');
+  });
+}, 300000); // every 5 minutes (300000)
