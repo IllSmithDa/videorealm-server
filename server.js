@@ -76,9 +76,11 @@ mongoose
   });
 
 // prevents heroku from setting wbesite to sleep due to inactivity
+/*
 setInterval(() => {
   request(process.env.BACKEND_URL,(err) => {
     if (err) console.log(err);
     console.log('sucessfully reached website');
   });
 }, 300000); // every 5 minutes (300000)
+*/
