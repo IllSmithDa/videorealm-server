@@ -90,9 +90,9 @@ const createScreenshot = (req, res, next) => {
 
   tmp.dir(function _tempDirCreated(err, path, cleanupCallback) {
     if (err) res.status(STATUS_USER_ERROR).json({ error: err.message});
-    console.log(`${path}\\${newFileName}.mp4s`);
-    videoFile.mv(`${path}\\${newFileName}.mp4`, () => {
-      ffmpeg(`${path}\\${newFileName}.mp4`)
+    console.log(`${path}/${newFileName}.mp4s`);
+    videoFile.mv(`${path}/${newFileName}.mp4`, () => {
+      ffmpeg(`${path}/${newFileName}.mp4`)
         .on('filenames', function(filenames) {
           console.log('Will generate ' + filenames.join(', '));
         })
@@ -100,7 +100,8 @@ const createScreenshot = (req, res, next) => {
           const s3 = new AWS.S3();
           const myBucket = 'my.unique.bucket.uservideos';
           const myKey = `${newFileName}.jpg`;
-          const file = fs.createReadStream(`${path}\\${newFileName}.jpg`);
+          const file = fs.createReadStream(`${path}/${newFileName}.jpg`);
+          console.log(`${path}/${newFileName}.jpg`);
           let params = { Bucket: myBucket, Key: myKey, Body: file};
 
           s3.upload(params, {}, (err) => {
