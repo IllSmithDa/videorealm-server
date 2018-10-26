@@ -50,6 +50,9 @@ server.use(session({
   // duration: 30 * 60 * 1000,
   // activeDuration: 5 * 60 * 1000,
 }));
+
+//https://stackoverflow.com/questions/15693192/heroku-node-js-error-web-process-failed-to-bind-to-port-within-60-seconds-of
+// add process.env.PORT to avoid this issue
 server.listen(process.env.PORT || port, () => {
   // console.log(`server listening on port ${port}`);
 });
@@ -81,4 +84,4 @@ setInterval(() => {
     if (err) console.log(err);
     console.log('sucessfully reached website');
   });
-}, 300000); // every 5 minutes (300000)
+}, 900000); // every 5 minutes (300000)
