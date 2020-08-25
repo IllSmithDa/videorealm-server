@@ -27,17 +27,16 @@ const corsOption = {
 };
 server.use(cors(corsOption));
 server.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-/*
+
 server.use((req, res, next) => {
-  console.log(req.headers)
-  res.setHeader("Access-Control-Allow-Origin", requrl.reqURL );
+  console.log(req.headers);
+  res.setHeader('Access-Control-Allow-Origin', requrl.reqURL );
   res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept'
   );
   next();
 });
-*/
 
 // required for uploading images and videos
 server.use(fileUpload());
@@ -67,7 +66,7 @@ AWS.config.update({
 mongoose.Promise = global.Promise;
 mongoose
   .connect(process.env.MONGOLAB_KEY)
-  //.connect("mongodb://localhost:27017/loanie")
+  //.connect('mongodb://localhost:27017/loanie')
   .then(function() {
     console.log('Database connected successfully to Mongolab');
   })
