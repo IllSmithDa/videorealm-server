@@ -18,7 +18,18 @@ const port = 3031;
 
 server.use(bodyParser.json());
 
-
+var whitelist = [requrl.reqURL];
+var corsOptions = {
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  }
+};
+server.use(cors(corsOptions));
+/*
 const corsOption = {
   origin: requrl.reqURL,
   credentials: true,
@@ -37,7 +48,7 @@ server.use((req, res, next) => {
   );
   next();
 });
-
+*/
 // required for uploading images and videos
 server.use(fileUpload());
 server.use(session({ 
