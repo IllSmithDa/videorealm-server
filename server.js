@@ -7,7 +7,7 @@ const fileUpload = require('express-fileupload');
 const favicon = require('serve-favicon');
 const path = require('path');
 const request = require('request');
-
+const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
 const server = express();
 
