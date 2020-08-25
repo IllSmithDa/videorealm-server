@@ -18,15 +18,12 @@ const port = 3031;
 
 server.use(bodyParser.json());
 
-var whitelist = [requrl.reqURL];
+
 var corsOptions = {
-  origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true)
-    } else {
-      callback(new Error('Not allowed by CORS'))
-    }
-  }
+  origin: requrl.reqURL,
+  credentials: true,
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  preflightContinue: false
 };
 server.use(cors(corsOptions));
 /*
@@ -35,7 +32,7 @@ const corsOption = {
   credentials: true,
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   preflightContinue: false
-};
+}
 server.use(cors(corsOption));
 server.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 
