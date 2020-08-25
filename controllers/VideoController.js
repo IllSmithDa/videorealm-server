@@ -218,7 +218,7 @@ const getAllVideos = (req, res) => {
         break;
       }
 
-      if (i === index + 4) {
+      if (i === index + 3) {
         break;
       }
     }
@@ -243,7 +243,7 @@ const getPopularVideos = (req, res) => {
         reachedEnd = true;
         break;
       }
-      if (i === index + 4) {
+      if (i === index + 3) {
         break;
       }
     }

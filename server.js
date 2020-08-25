@@ -7,17 +7,14 @@ const fileUpload = require('express-fileupload');
 const favicon = require('serve-favicon');
 const path = require('path');
 const request = require('request');
-const fs = require('fs');
-const knex = require('knex');
-const mysql = require('mysql');
-const sqlite3 = require('sqlite3');
+
 const bodyParser = require('body-parser');
 const server = express();
 
 const routes = require('./routes/routes');
 const requrl = require('./reqURL');
 
-const port = 3030;
+const port = 3031;
 
 server.use(bodyParser.json());
 
@@ -70,7 +67,7 @@ AWS.config.update({
 mongoose.Promise = global.Promise;
 mongoose
   .connect(process.env.MONGOLAB_KEY)
-  // .connect("mongodb://localhost:27017/loanie")
+  //.connect("mongodb://localhost:27017/loanie")
   .then(function() {
     console.log('Database connected successfully to Mongolab');
   })
