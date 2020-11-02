@@ -58,7 +58,7 @@ server.use(session({
 //https://stackoverflow.com/questions/15693192/heroku-node-js-error-web-process-failed-to-bind-to-port-within-60-seconds-of
 // add process.env.PORT to avoid this issue
 server.listen(process.env.PORT || port, () => {
-  // console.log(`server listening on port ${port}`);
+  console.log(`server listening on port ${port}`);
 });
 
 routes(server);
@@ -73,7 +73,7 @@ AWS.config.update({
 
 mongoose.Promise = global.Promise;
 mongoose
-  .connect(process.env.MONGOLAB_KEY)
+  .connect(process.env.MONGOALTLAS_KEY, {dbName: 'socialclub-users', useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex:true})
   //.connect('mongodb://localhost:27017/loanie')
   .then(function() {
     console.log('Database connected successfully to Mongolab');

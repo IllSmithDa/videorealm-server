@@ -210,7 +210,6 @@ const getAllVideos = (req, res) => {
   const videoArr = [];
   Video.find({}, (err, videos) => {
     if (err) res.status(STATUS_SERVER_ERROR).json({ error: err.message});
-    // console.log(videos[0].videoList);
     for (let i = index; i < videos[0].videoList.length; i++) {
       videoArr.push(videos[0].videoList[i]);
       if (i === videos[0].videoList.length - 1 || i === maxVideos) {
