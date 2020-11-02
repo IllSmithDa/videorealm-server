@@ -1,5 +1,4 @@
 const bcrypt = require('bcrypt');
-const db = require('../db.js');
 const User = require('../models/UserModel');
 const Video = require('../models/VideoModel');
 const BetaKey = require('../models/BetaKey');
@@ -306,33 +305,6 @@ const createAwsUser = () => {
   }) 
   */
 };
-
-const loginUser = (req, res) => {
-  const usernameReq = req.body.username;
-  const passwordReq = req.body.password;
-  // // console.log(usernameReq);
-  // // console.log(passwordReq);
-  db('userTable')
-    .where('username', usernameReq)
-    .then((post) => {
-      if (post.length === 0) {
-        // // console.log('incorrect username and/or password');
-        return;
-      }
-      if (post[0].password !== passwordReq) {
-        // // console.log('incorrect username and/or password');
-        return;
-      }
-      req.session.username = usernameReq;
-      req.session.password = passwordReq;
-      // // console.log('session', req.session.username)
-      res.status(STATUS_OK).json(req.session.username);
-    })
-    .catch(function(err) {
-      res.status(STATUS_SERVER_ERROR).json({ error: err.messsage });
-    });
-};
-
 const mongoLogin = (req, res) => {
   const usernameReq = req.body.username;
   const passwordReq = req.body.password;
@@ -476,7 +448,6 @@ const passwordHash = (req, res, next) => {
 };
 
 module.exports = {
-  loginUser,
   createUser,
   checkUsername,
   getUserData,

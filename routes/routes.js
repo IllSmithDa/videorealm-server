@@ -11,8 +11,6 @@ module.exports = (server) => {
     .post(AccountController.checkUsername);
   server.route('/checkEmail')
     .post(AccountController.checkEmail);
-  server.route('/loginUser')
-    .post(AccountController.loginUser);
   server.route('/mongoLogin')
     .post(AccountController.mongoLogin);
   server.route('/getUsername')
