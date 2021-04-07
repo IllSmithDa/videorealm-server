@@ -8,7 +8,6 @@ const favicon = require('serve-favicon');
 const path = require('path');
 const request = require('request');
 const bcrypt = require('bcrypt');
-const bodyParser = require('body-parser');
 const server = express();
 
 const routes = require('./routes/routes');
@@ -16,8 +15,8 @@ const requrl = require('./reqURL');
 
 const port = 3031;
 
-server.use(bodyParser.json());
-
+server.use(express.json());
+require('dotenv').config();
 
 var corsOptions = {
   origin: requrl.reqURL,
@@ -47,10 +46,11 @@ server.use((req, res, next) => {
 });
 */
 // required for uploading images and videos
+
 server.use(fileUpload());
 server.use(session({ 
+  cookieName: 'mySession',
   secret: process.env.NODE_SESSIONSECRET,
-  cookieName: 'session',
   // duration: 30 * 60 * 1000,
   // activeDuration: 5 * 60 * 1000,
 }));
