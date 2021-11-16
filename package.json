@@ -21,7 +21,7 @@
   "dependencies": {
     "@ffprobe-installer/ffprobe": "^1.1.0",
     "@sendgrid/mail": "^6.5.5",
-    "aws-sdk": "^2.739.0",
+    "aws-sdk": "^2.814.0",
     "bcrypt": "^5.0.0",
     "busboy": "^0.2.14",
     "client-sessions": "^0.8.0",
